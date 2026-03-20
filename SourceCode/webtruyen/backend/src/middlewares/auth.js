@@ -1,56 +1,107 @@
-const { verifyToken } = require('../utils/jwt');
-const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+const User = require('../models/user');
 
-// Middleware: Xác thực token
-exports.protect = async (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   try {
     let token;
 
-    // Lấy token từ header Authorization
-    if (req.headers.authorization?.startsWith('Bearer')) {
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
     }
 
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'Bạn chưa đăng nhập'
+        message: 'Access denied. No token provided.'
       });
     }
 
-    // Verify token
-    const decoded = verifyToken(token);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id || decoded.userId).select('-password');
 
-    // Lấy thông tin user
-    const user = await User.findById(decoded.id);
-    
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'User không tồn tại'
+        message: 'User not found or token invalid.'
       });
     }
 
-    // Gắn user vào request
     req.user = user;
     next();
   } catch (error) {
-    res.status(401).json({
+    return res.status(401).json({
       success: false,
-      message: 'Token không hợp lệ hoặc đã hết hạn'
+      message: 'Token invalid or expired.'
     });
   }
 };
 
-// Middleware: Phân quyền admin
-exports.restrictTo = (...roles) => {
-  return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Bạn không có quyền thực hiện thao tác này'
-      });
-    }
+const isAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
     next();
-  };
+  } else {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. Admin privileges required.'
+    });
+  }
+};
+
+const isVIP = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  }
+
+  const now = new Date();
+  const vipExpire = req.user.vipExpireDate || req.user.vipExpiresAt;
+  const vipActive = !!req.user.isVIP && (!vipExpire || now < new Date(vipExpire));
+
+  if (!vipActive) {
+    return res.status(403).json({
+      success: false,
+      message: 'VIP membership required to access this feature.'
+    });
+  }
+
+  next();
+};
+
+const optionalAuth = async (req, res, next) => {
+  try {
+    let token;
+
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await User.findById(decoded.id || decoded.userId).select('-password');
+      if (user) req.user = user;
+    }
+
+    next();
+  } catch (error) {
+    next();
+  }
+};
+
+const protect = verifyToken;
+const restrictTo = (...roles) => (req, res, next) => {
+  if (!req.user || !roles.includes(req.user.role)) {
+    return res.status(403).json({
+      success: false,
+      message: 'Bạn không có quyền thực hiện thao tác này'
+    });
+  }
+  next();
+};
+
+module.exports = {
+  verifyToken,
+  isAdmin,
+  isVIP,
+  optionalAuth,
+  protect,
+  restrictTo
 };

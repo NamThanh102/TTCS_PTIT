@@ -5,6 +5,8 @@ const connectDB = require('./config/database');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
+const comicRoutes = require('./routes/comicRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
 const app = express();
 
 // Connect Database
@@ -22,6 +24,8 @@ app.get('/api/test', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/comics', comicRoutes);
+app.use('/api/categories', categoryRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {
