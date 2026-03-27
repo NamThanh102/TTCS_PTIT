@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 
-// Generate JWT token
 exports.generateToken = (userId) => {
   return jwt.sign(
     { id: userId },
@@ -9,7 +8,6 @@ exports.generateToken = (userId) => {
   );
 };
 
-// Verify JWT token
 exports.verifyToken = (token) => {
   return jwt.verify(token, process.env.JWT_SECRET);
 };
