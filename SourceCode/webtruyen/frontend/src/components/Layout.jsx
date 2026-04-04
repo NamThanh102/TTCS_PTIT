@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { Link, useLocation, Outlet } from 'react-router-dom';
+import React from 'react';
+import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { FaHome, FaBook, FaHeart, FaHistory, FaCog } from 'react-icons/fa';
+import useAuthStore from '../store/authStore';
 
 const Layout = () => {
   const location = useLocation();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
 
   const isActive = (path) => location.pathname === path;
 
@@ -12,6 +15,11 @@ const Layout = () => {
     isActive(path)
       ? 'text-red-400 font-semibold'
       : 'text-gray-300 hover:text-red-400 transition-colors';
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <div className="min-h-screen flex flex-col relative text-gray-100">
@@ -38,12 +46,29 @@ const Layout = () => {
             <Link to="/comics" className={navClass('/comics')}><FaBook className="inline mr-1 mb-0.5" />Truyện tranh</Link>
             <Link to="/library" className={navClass('/library')}><FaHeart className="inline mr-1 mb-0.5" />Yêu thích</Link>
             <Link to="/history" className={navClass('/history')}><FaHistory className="inline mr-1 mb-0.5" />Lịch sử</Link>
-            <Link to="/admin" className={navClass('/admin')}><FaCog className="inline mr-1 mb-0.5" />Quản lý</Link>
+            {user?.role === 'admin' && (
+              <Link to="/admin" className={navClass('/admin')}><FaCog className="inline mr-1 mb-0.5" />Quản lý</Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-3 shrink-0">
-            <Link to="/login" className="text-sm text-gray-300 hover:text-red-400">Đăng nhập</Link>
-            <Link to="/register" className="text-sm px-4 py-2 rounded-full bg-red-600 hover:bg-red-500 text-white">Đăng ký</Link>
+            {user ? (
+              <>
+                <span className="hidden sm:block text-sm text-gray-300">Xin chao, {user.username}</span>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="text-sm px-4 py-2 rounded-full bg-zinc-700 hover:bg-zinc-600 text-white"
+                >
+                  Dang xuat
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="text-sm text-gray-300 hover:text-red-400">Đăng nhập</Link>
+                <Link to="/register" className="text-sm px-4 py-2 rounded-full bg-red-600 hover:bg-red-500 text-white">Đăng ký</Link>
+              </>
+            )}
           </div>
         </div>
       </header>

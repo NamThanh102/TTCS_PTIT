@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import useAuthStore from '../store/authStore';
 
 const RegisterPage = () => {
+  const navigate = useNavigate();
+  const register = useAuthStore((state) => state.register);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const error = useAuthStore((state) => state.error);
+  const clearError = useAuthStore((state) => state.clearError);
+
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -9,26 +16,62 @@ const RegisterPage = () => {
     confirmPassword: '',
   });
 
+  const [clientError, setClientError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
   const handleChange = (e) => {
+    if (error) {
+      clearError();
+    }
+
+    if (clientError) {
+      setClientError('');
+    }
+
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (formData.password !== formData.confirmPassword) {
-      console.log('Mật khẩu không khớp');
+      setClientError('Mat khau xac nhan khong khop');
       return;
     }
-    console.log('Form submitted (Week 5 - UI Only):', formData);
+
+    const result = await register({
+      username: formData.username,
+      email: formData.email,
+      password: formData.password,
+    });
+
+    if (result.success) {
+      setSuccessMessage('Dang ky thanh cong, dang chuyen den trang dang nhap...');
+      setTimeout(() => {
+        navigate('/login', { replace: true });
+      }, 1000);
+    }
   };
 
   return (
     <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-zinc-900/90 border border-zinc-800 rounded-xl p-8 backdrop-blur">
         <h2 className="text-3xl font-bold text-center text-gray-100 mb-8">Đăng ký</h2>
+
+        {(clientError || error) && (
+          <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            {clientError || error}
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="mb-4 rounded-lg border border-green-500/40 bg-green-500/10 px-4 py-3 text-sm text-green-200">
+            {successMessage}
+          </div>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -99,9 +142,10 @@ const RegisterPage = () => {
 
           <button
             type="submit"
-            className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-500 transition-colors"
+            disabled={isLoading}
+            className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Đăng ký
+            {isLoading ? 'Dang dang ky...' : 'Dang ky'}
           </button>
         </form>
 
