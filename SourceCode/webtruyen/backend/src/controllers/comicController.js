@@ -1,9 +1,11 @@
 const Comic = require('../models/Comic');
 const Chapter = require('../models/Chapter');
+const Category = require('../models/Category');
 const asyncHandler = require('../utils/asyncHandler');
 const { AppError } = require('../middlewares/errorHandler');
 const { successResponse, paginatedResponse } = require('../utils/responseHelper');
 const { uploadToCloudinary, deleteFromCloudinary } = require('../config/cloudinary');
+const mongoose = require('mongoose');
 
 exports.getAllComics = asyncHandler(async (req, res, next) => {
   const {
@@ -30,7 +32,17 @@ exports.getAllComics = asyncHandler(async (req, res, next) => {
   }
 
   if (category) {
-    query.categories = category;
+    // Accept both category ObjectId and category slug to avoid CastError on query.
+    if (mongoose.Types.ObjectId.isValid(category)) {
+      query.categories = category;
+    } else {
+      const categoryDoc = await Category.findOne({ slug: category }).select('_id').lean();
+      if (categoryDoc?._id) {
+        query.categories = categoryDoc._id;
+      } else {
+        query.categories = null;
+      }
+    }
   }
 
   if (status) {
@@ -60,7 +72,7 @@ exports.getAllComics = asyncHandler(async (req, res, next) => {
 exports.getComicBySlug = asyncHandler(async (req, res, next) => {
   const comic = await Comic.findOne({ slug: req.params.slug, isPublished: true })
     .populate('categories', 'name slug color icon')
-    .populate('uploadedBy', 'username displayName');
+    .populate('createdBy', 'username displayName');
 
   if (!comic) {
     return next(new AppError('Comic not found', 404));
@@ -102,7 +114,7 @@ exports.getChaptersByComicId = asyncHandler(async (req, res, next) => {
 exports.getComicById = asyncHandler(async (req, res, next) => {
   const comic = await Comic.findById(req.params.id)
     .populate('categories', 'name slug color icon')
-    .populate('uploadedBy', 'username displayName');
+    .populate('createdBy', 'username displayName');
 
   if (!comic) {
     return next(new AppError('Comic not found', 404));
@@ -158,7 +170,7 @@ exports.createComic = asyncHandler(async (req, res, next) => {
     status: status || 'ongoing',
     publicationYear,
     isPublished: true,
-    uploadedBy: req.user._id
+    createdBy: req.user._id
   });
 
   successResponse(res, 201, 'Comic created successfully', { comic });

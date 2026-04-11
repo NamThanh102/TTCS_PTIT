@@ -11,7 +11,7 @@ const AdminRoute = () => {
   if (!initialized) {
     return (
       <div className="container mx-auto px-4 py-8 text-center text-gray-400">
-        Dang kiem tra quyen truy cap...
+        Đang kiểm tra quyền truy cập...
       </div>
     );
   }
