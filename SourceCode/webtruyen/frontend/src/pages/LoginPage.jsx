@@ -90,7 +90,7 @@ const LoginPage = () => {
             disabled={isLoading}
             className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Dang dang nhap...' : 'Dang nhap'}
+            {isLoading ? 'Đang đăng nhập...' : 'Đăng Nhập'}
           </button>
         </form>
 

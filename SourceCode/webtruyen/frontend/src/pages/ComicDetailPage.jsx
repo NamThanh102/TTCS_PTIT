@@ -2,13 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../services/api';
 import { getStatusLabel } from '../utils/statusHelper';
+import useAuthStore from '../store/authStore';
 
 const ComicDetailPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const token = useAuthStore((state) => state.token);
+  const isAuthenticated = !!token;
   const [comic, setComic] = useState(null);
   const [chapters, setChapters] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
 
   useEffect(() => {
     if (!slug || slug === 'undefined') return;
@@ -24,6 +29,20 @@ const ComicDetailPage = () => {
         setComic(comicData);
         setChapters(chaptersRes.data.data || []);
         await api.post(`/comics/${comicData._id}/view`);
+
+        if (isAuthenticated) {
+          try {
+            const libraryRes = await api.get('/users/library');
+            const bookmarks = libraryRes?.data?.data?.bookmarks || [];
+            const exists = bookmarks.some((bookmark) => {
+              const bookmarkedComicId = bookmark?.comicId?._id || bookmark?.comicId;
+              return String(bookmarkedComicId) === String(comicData._id);
+            });
+            setIsBookmarked(exists);
+          } catch {
+            setIsBookmarked(false);
+          }
+        }
       } catch {
         navigate('/comics');
       } finally {
@@ -32,7 +51,34 @@ const ComicDetailPage = () => {
     };
 
     fetchData();
-  }, [slug, navigate]);
+  }, [slug, navigate, isAuthenticated]);
+
+  const handleToggleBookmark = async () => {
+    if (!comic || !isAuthenticated || bookmarkLoading) {
+      return;
+    }
+
+    setBookmarkLoading(true);
+    try {
+      await api.post(`/users/library/bookmark/${comic._id}`);
+      const nextBookmarked = !isBookmarked;
+      setIsBookmarked(nextBookmarked);
+      setComic((prev) => ({
+        ...prev,
+        statistics: {
+          ...(prev?.statistics || {}),
+          totalBookmarks: Math.max(
+            0,
+            (prev?.statistics?.totalBookmarks || 0) + (nextBookmarked ? 1 : -1)
+          )
+        }
+      }));
+    } catch {
+      // Keep silent to avoid breaking reading flow.
+    } finally {
+      setBookmarkLoading(false);
+    }
+  };
 
   const getCoverUrl = (coverImage) => {
     if (!coverImage) return '/assets/default-cover.png';
@@ -112,11 +158,32 @@ const ComicDetailPage = () => {
 
               <p className="text-gray-300 mb-6 leading-relaxed">{comic.description}</p>
 
-              {chapters.length > 0 && (
-                <Link to={`/read/${chapters[0]._id}`} className="px-6 py-3 bg-cyan-600 text-white font-semibold rounded-lg hover:bg-cyan-500">
-                  Đọc ngay
-                </Link>
-              )}
+              <div className="flex items-center gap-3">
+                {chapters.length > 0 && (
+                  <Link to={`/read/${chapters[0]._id}`} className="px-6 py-3 bg-cyan-600 text-white font-semibold rounded-lg hover:bg-cyan-500">
+                    Đọc ngay
+                  </Link>
+                )}
+
+                {isAuthenticated && (
+                  <button
+                    type="button"
+                    onClick={handleToggleBookmark}
+                    disabled={bookmarkLoading}
+                    className={`px-6 py-3 font-semibold rounded-lg border transition-colors ${
+                      isBookmarked
+                        ? 'bg-red-500/10 text-red-400 border-red-500/60 hover:bg-red-500/20'
+                        : 'bg-zinc-800 text-gray-100 border-zinc-700 hover:bg-zinc-700'
+                    }`}
+                  >
+                    {bookmarkLoading
+                      ? 'Đang lưu...'
+                      : isBookmarked
+                        ? 'Đã lưu tủ truyện'
+                        : 'Yêu thích / Lưu tủ truyện'}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

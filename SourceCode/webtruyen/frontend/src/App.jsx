@@ -8,6 +8,9 @@ import RegisterPage from './pages/RegisterPage';
 import HomePage from './pages/HomePage';
 import ComicsPage from './pages/ComicsPage';
 import ComicDetailPage from './pages/ComicDetailPage';
+import ReaderPage from './pages/ReaderPage';
+import LibraryPage from './pages/LibraryPage';
+import HistoryPage from './pages/HistoryPage';
 import useAuthStore from './store/authStore';
 
 const PlaceholderPage = ({ name }) => (
@@ -32,12 +35,12 @@ function App() {
         <Route path="register" element={<RegisterPage />} />
         <Route path="comics" element={<ComicsPage />} />
         <Route path="comics/:slug" element={<ComicDetailPage />} />
-        <Route path="read/:chapterId" element={<PlaceholderPage name="Trang Doc Truyen (Tuan sau)" />} />
+        <Route path="read/:chapterId" element={<ReaderPage />} />
 
         <Route element={<PrivateRoute />}>
           <Route path="profile" element={<PlaceholderPage name="Hồ Sơ Cá Nhân" />} />
-          <Route path="library" element={<PlaceholderPage name="Thư Viện" />} />
-          <Route path="history" element={<PlaceholderPage name="Lịch Sử" />} />
+          <Route path="library" element={<LibraryPage />} />
+          <Route path="history" element={<HistoryPage />} />
         </Route>
 
         <Route element={<AdminRoute />}>

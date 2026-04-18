@@ -60,7 +60,7 @@ const Layout = () => {
                   onClick={handleLogout}
                   className="text-sm px-4 py-2 rounded-full bg-zinc-700 hover:bg-zinc-600 text-white"
                 >
-                  Dang xuat
+                  Đăng xuất
                 </button>
               </>
             ) : (

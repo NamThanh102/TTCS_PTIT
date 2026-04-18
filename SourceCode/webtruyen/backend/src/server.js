@@ -7,6 +7,8 @@ const connectDB = require('./config/database');
 const authRoutes = require('./routes/authRoutes');
 const comicRoutes = require('./routes/comicRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
+const chapterRoutes = require('./routes/chapterRoutes');
+const userRoutes = require('./routes/userRoutes');
 const app = express();
 
 // Connect Database
@@ -26,6 +28,8 @@ app.get('/api/test', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/comics', comicRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/chapters', chapterRoutes);
+app.use('/api/users', userRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {
