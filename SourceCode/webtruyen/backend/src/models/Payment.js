@@ -33,7 +33,6 @@ const paymentSchema = new mongoose.Schema({
   collection: 'payments'
 });
 
-paymentSchema.index({ transactionId: 1 }, { unique: true });
 paymentSchema.index({ userId: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Payment', paymentSchema);

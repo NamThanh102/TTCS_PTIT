@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
-import { FaHome, FaBook, FaHeart, FaHistory, FaCog } from 'react-icons/fa';
+import { FaHome, FaBook, FaHeart, FaHistory, FaCoins,FaCog } from 'react-icons/fa';
 import useAuthStore from '../store/authStore';
 
 const Layout = () => {
@@ -44,8 +44,9 @@ const Layout = () => {
           <nav className="hidden md:flex items-center gap-5 text-base font-bold">
             <Link to="/" className={navClass('/')}><FaHome className="inline mr-1 mb-0.5" />Trang chủ</Link>
             <Link to="/comics" className={navClass('/comics')}><FaBook className="inline mr-1 mb-0.5" />Truyện tranh</Link>
-            <Link to="/library" className={navClass('/library')}><FaHeart className="inline mr-1 mb-0.5" />Yêu thích</Link>
-            <Link to="/history" className={navClass('/history')}><FaHistory className="inline mr-1 mb-0.5" />Lịch sử</Link>
+            {user && <Link to="/library" className={navClass('/library')}><FaHeart className="inline mr-1 mb-0.5" />Yêu thích</Link>}
+            {user && <Link to="/history" className={navClass('/history')}><FaHistory className="inline mr-1 mb-0.5" />Lịch sử</Link>}
+            {user && <Link to="/recharge" className={navClass('/recharge')}><FaCoins className="inline mr-1 mb-0.5" />Nạp Point</Link>}
             {user?.role === 'admin' && (
               <Link to="/admin" className={navClass('/admin')}><FaCog className="inline mr-1 mb-0.5" />Quản lý</Link>
             )}

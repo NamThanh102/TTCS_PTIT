@@ -76,7 +76,10 @@ exports.login = async (req, res, next) => {
           email: user.email,
           role: user.role,
           isVIP: user.isVIP,
-          mPoint: user.mPoint
+          vipExpireDate: user.vipExpireDate,
+          mPoints: user.mPoints,
+          avatar: user.avatar,
+          displayName: user.displayName
         },
         token
       }
@@ -103,8 +106,10 @@ exports.getMe = async (req, res, next) => {
           email: user.email,
           role: user.role,
           isVIP: user.isVIP,
-          mPoint: user.mPoint,
-          avatar: user.avatar
+          vipExpireDate: user.vipExpireDate,
+          mPoints: user.mPoints,
+          avatar: user.avatar,
+          displayName: user.displayName
         }
       }
     });

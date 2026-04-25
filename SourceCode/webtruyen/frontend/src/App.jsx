@@ -11,6 +11,7 @@ import ComicDetailPage from './pages/ComicDetailPage';
 import ReaderPage from './pages/ReaderPage';
 import LibraryPage from './pages/LibraryPage';
 import HistoryPage from './pages/HistoryPage';
+import RechargePage from './pages/RechargePage';
 import useAuthStore from './store/authStore';
 
 const PlaceholderPage = ({ name }) => (
@@ -41,6 +42,7 @@ function App() {
           <Route path="profile" element={<PlaceholderPage name="Hồ Sơ Cá Nhân" />} />
           <Route path="library" element={<LibraryPage />} />
           <Route path="history" element={<HistoryPage />} />
+          <Route path="recharge" element={<RechargePage />} />
         </Route>
 
         <Route element={<AdminRoute />}>

@@ -17,6 +17,8 @@ const useAuthStore = create((set) => ({
 
   clearError: () => set({ error: null }),
 
+  updateUser: (user) => set({ user }),
+
   logout: () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(TOKEN_KEY);
