@@ -12,6 +12,9 @@ import ReaderPage from './pages/ReaderPage';
 import LibraryPage from './pages/LibraryPage';
 import HistoryPage from './pages/HistoryPage';
 import RechargePage from './pages/RechargePage';
+import AdminDashboard from './pages/admin/Dashboard';
+import AdminPayments from './pages/admin/Payments';
+import AdminUsers from './pages/admin/Users';
 import useAuthStore from './store/authStore';
 
 const PlaceholderPage = ({ name }) => (
@@ -46,7 +49,9 @@ function App() {
         </Route>
 
         <Route element={<AdminRoute />}>
-          <Route path="admin" element={<PlaceholderPage name="Trang Quản Lý" />} />
+          <Route path="admin" element={<AdminDashboard />} />
+          <Route path="admin/payments" element={<AdminPayments />} />
+          <Route path="admin/users" element={<AdminUsers />} />
         </Route>
 
         <Route path="*" element={<PlaceholderPage name="Trang Không Tồn Tại" />} />
