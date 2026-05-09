@@ -6,6 +6,10 @@ const asyncHandler = require('../utils/asyncHandler');
 const { AppError } = require('../middlewares/errorHandler');
 const { successResponse } = require('../utils/responseHelper');
 
+const isVIPActive = (user) => {
+  return user.isVIP && user.vipExpireDate && user.vipExpireDate > new Date();
+};
+
 exports.getProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
   successResponse(res, 200, 'Profile retrieved successfully', { user });
@@ -239,9 +243,9 @@ exports.upgradeVIP = asyncHandler(async (req, res, next) => {
 exports.getStats = asyncHandler(async (req, res) => {
   const [totalUsers, vipUsers, totalComics, viewStats] = await Promise.all([
     User.countDocuments(),
-    User.countDocuments({
-      isVIP: true,
-      vipExpireDate: { $gt: new Date() }
+    User.countDocuments({ 
+      isVIP: true, 
+      vipExpireDate: { $gt: new Date() }  // WEEK 11: Contract normalization - proper VIP active check
     }),
     Comic.countDocuments(),
     Comic.aggregate([
@@ -283,6 +287,12 @@ exports.getAllUsers = asyncHandler(async (req, res) => {
   } else if (role === 'vip') {
     query.isVIP = true;
     query.vipExpireDate = { $gt: new Date() };
+  } else if (role === 'user') {
+    query.role = { $ne: 'admin' };
+    query.$or = [
+      { isVIP: false },
+      { vipExpireDate: { $lte: new Date() } }
+    ];
   }
 
   const skip = (page - 1) * limit;
@@ -328,13 +338,21 @@ exports.updateUserByAdmin = asyncHandler(async (req, res, next) => {
   if (username) updateData.username = username;
   if (email) updateData.email = email;
   if (displayName) updateData.displayName = displayName;
-  if (role) updateData.role = role;
-  if (mPoints !== undefined) updateData.mPoints = mPoints;
+  
+  if (role) {
+    updateData.role = role;
+  }
+  
+  if (mPoints !== undefined) {
+    if (mPoints < 0) {
+      return next(new AppError('M-Points cannot be negative', 400));
+    }
+    updateData.mPoints = mPoints;
+  }
 
   if (isVIP !== undefined) {
     updateData.isVIP = isVIP;
-
-    if (isVIP && vipExpireDate) {
+    if (vipExpireDate) {
       updateData.vipExpireDate = new Date(vipExpireDate);
     } else if (!isVIP) {
       updateData.vipExpireDate = null;

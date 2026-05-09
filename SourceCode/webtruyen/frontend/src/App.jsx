@@ -15,6 +15,10 @@ import RechargePage from './pages/RechargePage';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminPayments from './pages/admin/Payments';
 import AdminUsers from './pages/admin/Users';
+import AdminComics from './pages/admin/Comics';
+import AdminComicForm from './pages/admin/ComicForm';
+import AdminCategories from './pages/admin/Categories';
+import AdminChapterUpload from './pages/admin/ChapterUpload';
 import useAuthStore from './store/authStore';
 
 const PlaceholderPage = ({ name }) => (
@@ -52,6 +56,11 @@ function App() {
           <Route path="admin" element={<AdminDashboard />} />
           <Route path="admin/payments" element={<AdminPayments />} />
           <Route path="admin/users" element={<AdminUsers />} />
+          <Route path="admin/comics" element={<AdminComics />} />
+          <Route path="admin/comics/new" element={<AdminComicForm />} />
+          <Route path="admin/comics/:id/edit" element={<AdminComicForm />} />
+          <Route path="admin/comics/:comicId/chapters/new" element={<AdminChapterUpload />} />
+          <Route path="admin/categories" element={<AdminCategories />} />
         </Route>
 
         <Route path="*" element={<PlaceholderPage name="Trang Không Tồn Tại" />} />
