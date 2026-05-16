@@ -57,7 +57,7 @@ const Comics = () => {
                     <div className="text-sm text-gray-400">{c.description?.slice(0, 120)}</div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Link to={`/admin/comics/${c._id}/chapters/new`} className="px-3 py-1 bg-blue-600 rounded text-white">+ Chương</Link>
+                    <Link to={`/admin/comics/${c._id}/chapters`} className="px-3 py-1 bg-blue-600 rounded text-white">Quản lý chương</Link>
                     <Link to={`/admin/comics/${c._id}/edit`} className="px-3 py-1 bg-yellow-600 rounded text-white">Sửa</Link>
                     <button onClick={() => handleDelete(c._id)} className="px-3 py-1 bg-red-600 rounded text-white">Xóa</button>
                   </div>

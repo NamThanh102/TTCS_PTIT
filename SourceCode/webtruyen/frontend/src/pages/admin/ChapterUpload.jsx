@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 
 const ChapterUpload = () => {
   const navigate = useNavigate();
-  const { comicId } = useParams();
+  const { comicId, chapterId } = useParams();
   const [comic, setComic] = useState(null);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -18,7 +18,27 @@ const ChapterUpload = () => {
 
   useEffect(() => {
     fetchComic();
-  }, [comicId]);
+    if (chapterId) fetchChapter();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [comicId, chapterId]);
+
+  const fetchChapter = async () => {
+    try {
+      const res = await api.get(`/chapters/${chapterId}`);
+      const data = res.data.data.chapter || res.data.data;
+      setFormData({
+        chapterNumber: data.chapterNumber,
+        title: data.title || '',
+        isVIPOnly: !!data.isVIPOnly
+      });
+      const existingPages = (data.pages || []).map(p => ({ preview: p.url, order: p.order, publicId: p.publicId, existing: true }));
+      setPages(existingPages);
+      setComic(data.comicId || null);
+    } catch (err) {
+      toast.error('Không thể tải dữ liệu chương');
+      navigate('/admin/comics');
+    }
+  };
 
   const fetchComic = async () => {
     try {
@@ -58,7 +78,7 @@ const ChapterUpload = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (pages.length === 0) {
+    if (!chapterId && pages.length === 0) {
       toast.error('Vui lòng thêm ít nhất 1 trang');
       return;
     }
@@ -71,23 +91,34 @@ const ChapterUpload = () => {
     setLoading(true);
 
     try {
-      const data = new FormData();
-      data.append('chapterNumber', formData.chapterNumber);
-      data.append('title', formData.title);
-      data.append('isVIPOnly', formData.isVIPOnly);
-      
-      pages.forEach((page) => {
-        data.append('pages', page.file);
-      });
+      if (chapterId) {
+        // Edit mode: currently only update metadata (title, isPublished/isVIPOnly)
+        await api.put(`/chapters/${chapterId}`, {
+          title: formData.title,
+          isPublished: true,
+          isVIPOnly: formData.isVIPOnly
+        });
+        toast.success('Cập nhật chương thành công');
+        navigate(`/admin/comics/${comicId}/chapters`);
+      } else {
+        const data = new FormData();
+        data.append('chapterNumber', formData.chapterNumber);
+        data.append('title', formData.title);
+        data.append('isVIPOnly', formData.isVIPOnly);
+        
+        pages.forEach((page) => {
+          if (page.file) data.append('pages', page.file);
+        });
 
-      const response = await api.post(`/comics/${comicId}/chapters`, data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+        await api.post(`/comics/${comicId}/chapters`, data, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
 
-      toast.success('Upload chapter thành công!');
-      navigate('/admin/comics');
+        toast.success('Upload chapter thành công!');
+        navigate(`/admin/comics/${comicId}/chapters`);
+      }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Upload thất bại');
+      toast.error(error.response?.data?.message || 'Thao tác thất bại');
     } finally {
       setLoading(false);
     }
@@ -98,7 +129,7 @@ const ChapterUpload = () => {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-100">Thêm chương</h1>
+            <h1 className="text-3xl font-bold text-gray-100">{chapterId ? 'Chỉnh sửa chương' : 'Thêm chương'}</h1>
             <p className="text-gray-400 mt-1">Truyện: {comic?.title}</p>
           </div>
           <button
@@ -114,7 +145,7 @@ const ChapterUpload = () => {
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
             <h2 className="text-xl font-bold text-gray-100 mb-4">Thông tin chương</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Số chương <span className="text-red-500">*</span>
@@ -128,6 +159,7 @@ const ChapterUpload = () => {
                   step="0.1"
                   className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 text-gray-100 rounded-lg focus:outline-none focus:border-red-400"
                   placeholder="1"
+                  disabled={!!chapterId}
                 />
               </div>
 
@@ -143,7 +175,7 @@ const ChapterUpload = () => {
               </div>
             </div>
 
-            <div className="mt-4">
+              <div className="mt-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"

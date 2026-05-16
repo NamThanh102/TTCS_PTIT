@@ -129,8 +129,7 @@ const ComicDetailPage = () => {
                 {comic.categories?.map((category) => (
                   <span
                     key={category._id || category}
-                    className="px-3 py-1 rounded-full text-sm text-white"
-                    style={{ backgroundColor: category.color || '#3B82F6' }}
+                    className="px-3 py-1 rounded-full text-sm bg-zinc-800 text-gray-200 border border-zinc-700"
                   >
                     {category.name}
                   </span>

@@ -53,7 +53,7 @@ exports.getAllComics = asyncHandler(async (req, res, next) => {
 
   const comics = await Comic.find(query)
     .select('title slug coverImage author categories status statistics lastChapterUpdate')
-    .populate('categories', 'name slug color icon')
+    .populate('categories', 'name slug icon')
     .sort(sort)
     .limit(parseInt(limit, 10))
     .skip(skip)
@@ -71,7 +71,7 @@ exports.getAllComics = asyncHandler(async (req, res, next) => {
 
 exports.getComicBySlug = asyncHandler(async (req, res, next) => {
   const comic = await Comic.findOne({ slug: req.params.slug, isPublished: true })
-    .populate('categories', 'name slug color icon')
+    .populate('categories', 'name slug icon')
     .populate('createdBy', 'username displayName');
 
   if (!comic) {
@@ -113,7 +113,7 @@ exports.getChaptersByComicId = asyncHandler(async (req, res, next) => {
 
 exports.getComicById = asyncHandler(async (req, res, next) => {
   const comic = await Comic.findById(req.params.id)
-    .populate('categories', 'name slug color icon')
+    .populate('categories', 'name slug icon')
     .populate('createdBy', 'username displayName');
 
   if (!comic) {

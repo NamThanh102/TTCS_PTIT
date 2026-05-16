@@ -37,7 +37,11 @@ const Layout = () => {
       <header className="sticky top-0 z-50 bg-neutral-900/95 backdrop-blur border-b border-red-400/30 shadow-lg">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 rounded bg-red-600 flex items-center justify-center font-bold text-white">M</div>
+            <img
+              src="/assets/a1.jpg"
+              alt="MeTruyen"
+              className="w-8 h-8 rounded object-cover border border-red-400/40"
+            />
             <span className="font-bold text-xl text-red-500">MeTruyen</span>
           </Link>
 
@@ -55,7 +59,7 @@ const Layout = () => {
           <div className="flex items-center gap-3 shrink-0">
             {user ? (
               <>
-                <span className="hidden sm:block text-sm text-gray-300">Xin chao, {user.username}</span>
+                <span className="hidden sm:block text-sm text-gray-300">Hello, {user.username}</span>
                 <button
                   type="button"
                   onClick={handleLogout}

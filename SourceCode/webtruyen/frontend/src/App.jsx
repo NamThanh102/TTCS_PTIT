@@ -19,6 +19,7 @@ import AdminComics from './pages/admin/Comics';
 import AdminComicForm from './pages/admin/ComicForm';
 import AdminCategories from './pages/admin/Categories';
 import AdminChapterUpload from './pages/admin/ChapterUpload';
+import AdminChapterList from './pages/admin/ChapterList';
 import useAuthStore from './store/authStore';
 
 const PlaceholderPage = ({ name }) => (
@@ -60,6 +61,8 @@ function App() {
           <Route path="admin/comics/new" element={<AdminComicForm />} />
           <Route path="admin/comics/:id/edit" element={<AdminComicForm />} />
           <Route path="admin/comics/:comicId/chapters/new" element={<AdminChapterUpload />} />
+          <Route path="admin/comics/:comicId/chapters/:chapterId/edit" element={<AdminChapterUpload />} />
+          <Route path="admin/comics/:comicId/chapters" element={<AdminChapterList />} />
           <Route path="admin/categories" element={<AdminCategories />} />
         </Route>
 

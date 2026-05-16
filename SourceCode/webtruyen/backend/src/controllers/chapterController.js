@@ -4,6 +4,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const { AppError } = require('../middlewares/errorHandler');
 const { successResponse } = require('../utils/responseHelper');
 const { uploadToCloudinary } = require('../config/cloudinary');
+const { deleteFromCloudinary } = require('../config/cloudinary');
 const archiver = require('archiver');
 const axios = require('axios');
 
@@ -25,7 +26,7 @@ exports.getChapterById = asyncHandler(async (req, res, next) => {
 
 exports.createChapter = asyncHandler(async (req, res, next) => {
   const comicId = req.params.comicId || req.body.comicId;
-  const { chapterNumber, title, isPublished } = req.body;
+  const { chapterNumber, title, isPublished, isVIPOnly } = req.body;
 
   if (!comicId || !chapterNumber) {
     return next(new AppError('Please provide comic ID and chapter number', 400));
@@ -67,6 +68,7 @@ exports.createChapter = asyncHandler(async (req, res, next) => {
     pages,
     isPublished: isPublished !== undefined ? isPublished : true,
     publishDate: isPublished !== false ? Date.now() : null,
+    isVIPOnly: isVIPOnly !== undefined ? isVIPOnly : false,
     uploadedBy: req.user._id
   });
 
@@ -122,3 +124,50 @@ exports.downloadChapter = asyncHandler(async (req, res, next) => {
 });
 
 module.exports = exports;
+
+exports.updateChapter = asyncHandler(async (req, res, next) => {
+  const chapterId = req.params.id;
+  const { title, isPublished, isVIPOnly } = req.body;
+
+  const chapter = await Chapter.findById(chapterId);
+  if (!chapter) return next(new AppError('Chapter not found', 404));
+
+  if (title !== undefined) chapter.title = title;
+  if (isPublished !== undefined) {
+    chapter.isPublished = !!isPublished;
+    chapter.publishDate = chapter.isPublished ? (chapter.publishDate || Date.now()) : null;
+  }
+  if (isVIPOnly !== undefined) chapter.isVIPOnly = !!isVIPOnly;
+
+  await chapter.save();
+
+  successResponse(res, 200, 'Chapter updated successfully', { chapter });
+});
+
+exports.deleteChapter = asyncHandler(async (req, res, next) => {
+  const chapterId = req.params.id;
+  const chapter = await Chapter.findById(chapterId);
+  if (!chapter) return next(new AppError('Chapter not found', 404));
+
+  // delete pages from cloudinary when publicId present
+  try {
+    for (const p of chapter.pages || []) {
+      if (p.publicId) {
+        await deleteFromCloudinary(p.publicId);
+      }
+    }
+  } catch (err) {
+    // log and continue
+    console.error('Error deleting page assets:', err.message);
+  }
+
+  const comicId = chapter.comicId;
+  await Chapter.deleteOne({ _id: chapterId });
+
+  // update navigation and counts
+  await updateChapterNavigation(comicId);
+  const comic = await Comic.findById(comicId);
+  if (comic) await comic.updateChapterCount();
+
+  successResponse(res, 200, 'Chapter deleted successfully');
+});

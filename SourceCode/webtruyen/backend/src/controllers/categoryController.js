@@ -1,11 +1,12 @@
 const Category = require('../models/Category');
+const Comic = require('../models/Comic');
 const asyncHandler = require('../utils/asyncHandler');
 const { AppError } = require('../middlewares/errorHandler');
 const { successResponse } = require('../utils/responseHelper');
 
 exports.getAllCategories = asyncHandler(async (req, res, next) => {
-  const categories = await Category.find({ isActive: true })
-    .select('name slug description icon color order comicCount')
+  const categories = await Category.find()
+    .select('name slug description icon order comicCount')
     .sort({ order: 1, name: 1 })
     .lean();
 
@@ -13,7 +14,7 @@ exports.getAllCategories = asyncHandler(async (req, res, next) => {
 });
 
 exports.getCategoryBySlug = asyncHandler(async (req, res, next) => {
-  const category = await Category.findOne({ slug: req.params.slug, isActive: true });
+  const category = await Category.findOne({ slug: req.params.slug });
 
   if (!category) {
     return next(new AppError('Category not found', 404));
@@ -23,7 +24,7 @@ exports.getCategoryBySlug = asyncHandler(async (req, res, next) => {
 });
 
 exports.createCategory = asyncHandler(async (req, res, next) => {
-  const { name, description, icon, color, order } = req.body;
+  const { name, description, icon, order } = req.body;
 
   if (!name) {
     return next(new AppError('Category name is required', 400));
@@ -33,7 +34,6 @@ exports.createCategory = asyncHandler(async (req, res, next) => {
     name,
     description,
     icon,
-    color: color || '#3B82F6',
     order: order || 0
   });
 
@@ -60,8 +60,12 @@ exports.deleteCategory = asyncHandler(async (req, res, next) => {
     return next(new AppError('Category not found', 404));
   }
 
-  category.isActive = false;
-  await category.save();
+  await Comic.updateMany(
+    { categories: category._id },
+    { $pull: { categories: category._id } }
+  );
+
+  await Category.deleteOne({ _id: category._id });
 
   successResponse(res, 200, 'Category deleted successfully');
 });

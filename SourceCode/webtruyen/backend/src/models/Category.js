@@ -23,10 +23,6 @@ const categorySchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  color: {
-    type: String,
-    default: '#3B82F6'
-  },
   order: {
     type: Number,
     default: 0
@@ -34,10 +30,6 @@ const categorySchema = new mongoose.Schema({
   comicCount: {
     type: Number,
     default: 0
-  },
-  isActive: {
-    type: Boolean,
-    default: true
   }
 }, {
   timestamps: true,

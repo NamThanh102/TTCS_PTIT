@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 const Categories = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ name: '', slug: '', description: '', color: '#1f2937', isActive: true });
+  const [form, setForm] = useState({ name: '', slug: '', description: '' });
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ const Categories = () => {
         await api.post('/categories', form);
         toast.success('Thêm thể loại thành công');
       }
-      setForm({ name: '', slug: '', description: '', color: '#1f2937', isActive: true });
+      setForm({ name: '', slug: '', description: '' });
       setEditingId(null);
       fetchCategories();
     } catch (err) {
@@ -46,7 +46,7 @@ const Categories = () => {
 
   const handleEdit = (c) => {
     setEditingId(c._id);
-    setForm({ name: c.name, slug: c.slug, description: c.description || '', color: c.color || '#1f2937', isActive: c.isActive });
+    setForm({ name: c.name, slug: c.slug, description: c.description || '' });
   };
 
   const handleDelete = async (id) => {
@@ -69,16 +69,11 @@ const Categories = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Tên thể loại" className="p-2 bg-zinc-800 border border-zinc-700 rounded text-gray-100" required />
             <input value={form.slug} onChange={e => setForm({...form, slug: e.target.value})} placeholder="Slug (ví dụ: action)" className="p-2 bg-zinc-800 border border-zinc-700 rounded text-gray-100" />
-            <input value={form.color} onChange={e => setForm({...form, color: e.target.value})} type="color" className="p-2 rounded" />
-            <div className="flex items-center gap-2">
-              <label className="text-gray-300">Kích hoạt</label>
-              <input type="checkbox" checked={form.isActive} onChange={e => setForm({...form, isActive: e.target.checked})} />
-            </div>
           </div>
           <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Mô tả" className="mt-3 p-2 w-full bg-zinc-800 border border-zinc-700 rounded text-gray-100" />
           <div className="mt-3 flex gap-2">
             <button className="px-4 py-2 bg-blue-600 rounded text-white">{editingId ? 'Cập nhật' : 'Thêm'}</button>
-            {editingId && <button type="button" onClick={() => { setEditingId(null); setForm({ name: '', slug: '', description: '', color: '#1f2937', isActive: true });}} className="px-4 py-2 bg-zinc-700 rounded text-gray-200">Hủy</button>}
+            {editingId && <button type="button" onClick={() => { setEditingId(null); setForm({ name: '', slug: '', description: '' });}} className="px-4 py-2 bg-zinc-700 rounded text-gray-200">Hủy</button>}
           </div>
         </form>
 
