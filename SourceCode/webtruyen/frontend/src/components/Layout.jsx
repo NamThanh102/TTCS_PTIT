@@ -23,16 +23,27 @@ const Layout = () => {
 
   return (
     <div className="min-h-screen flex flex-col relative text-gray-100">
-      <div
-        className="fixed inset-0 -z-20 bg-gradient-to-br from-gray-900 via-gray-800 to-black"
-      />
-      <div
-        className="fixed inset-0 -z-10"
-        style={{
-          background:
-            'linear-gradient(135deg, rgba(18, 18, 18, 0.82) 0%, rgba(26, 26, 26, 0.74) 50%, rgba(18, 18, 18, 0.82) 100%)',
-        }}
-      />
+      <div className="fixed inset-0 -z-20 pointer-events-none">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: "url('/assets/a3.jpg')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed',
+            filter: 'blur(2px)',
+            transform: 'scale(1.05)',
+            opacity: 0.25,
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(135deg, rgba(10, 10, 10, 0.55) 0%, rgba(12, 12, 12, 0.48) 50%, rgba(8, 8, 8, 0.58) 100%)',
+          }}
+        />
+      </div>
 
       <header className="sticky top-0 z-50 bg-neutral-900/95 backdrop-blur border-b border-red-400/30 shadow-lg">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
