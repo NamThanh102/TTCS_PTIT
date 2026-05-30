@@ -12,6 +12,7 @@ import ReaderPage from './pages/ReaderPage';
 import LibraryPage from './pages/LibraryPage';
 import HistoryPage from './pages/HistoryPage';
 import RechargePage from './pages/RechargePage';
+import ProfilePage from './pages/ProfilePage';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminPayments from './pages/admin/Payments';
 import AdminUsers from './pages/admin/Users';
@@ -47,7 +48,7 @@ function App() {
         <Route path="read/:chapterId" element={<ReaderPage />} />
 
         <Route element={<PrivateRoute />}>
-          <Route path="profile" element={<PlaceholderPage name="Hồ Sơ Cá Nhân" />} />
+          <Route path="profile" element={<ProfilePage />} />
           <Route path="library" element={<LibraryPage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="recharge" element={<RechargePage />} />
