@@ -113,15 +113,30 @@ const Layout = () => {
                     className="flex items-center gap-3 rounded-full border border-[#666] bg-[#151515] px-4 py-2 text-left transition-colors hover:border-red-400/60 hover:bg-[#1b1b1b]"
                   >
                     <span className="hidden sm:block text-sm font-medium text-gray-200">Xin chào, {user.username}</span>
-                    <FaUserCircle className="text-[26px] text-gray-400" />
+                    <img
+                      src={user.avatar || 'https://via.placeholder.com/32'}
+                      alt=""
+                      className="w-8 h-8 rounded-full object-cover border border-zinc-600"
+                      onError={(e) => { e.target.src = 'https://via.placeholder.com/32'; }}
+                    />
                     <FaChevronDown className="text-xs text-gray-500" />
                   </button>
 
                   {userMenuOpen && (
                     <div className="absolute right-0 top-[calc(100%+0.45rem)] w-64 overflow-hidden rounded-xl border border-[#2f2f2f] bg-[#161616] shadow-2xl shadow-black/60">
                       <div className="border-b border-white/10 px-4 py-4">
-                        <div className="font-semibold text-gray-100">{user.username}</div>
-                        <div className="text-sm text-gray-400 mt-1 truncate">{user.email}</div>
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={user.avatar || 'https://via.placeholder.com/40'}
+                            alt=""
+                            className="w-10 h-10 rounded-full object-cover border border-zinc-600"
+                            onError={(e) => { e.target.src = 'https://via.placeholder.com/40'; }}
+                          />
+                          <div>
+                            <div className="font-semibold text-gray-100">{user.username}</div>
+                            <div className="text-sm text-gray-400 mt-1 truncate">{user.email}</div>
+                          </div>
+                        </div>
                       </div>
                       <div className="py-2">
                         <Link to="/profile" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-sm text-gray-200 transition-colors hover:bg-white/5 hover:text-white">

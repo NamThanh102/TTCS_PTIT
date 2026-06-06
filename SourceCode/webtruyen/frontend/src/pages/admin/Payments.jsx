@@ -46,7 +46,7 @@ const AdminPayments = () => {
       if (statusFilter) params.append('status', statusFilter);
       if (search.trim()) params.append('search', search.trim());
 
-      const res = await api.get(`/users/admin/payments?${params}`);
+      const res = await api.get(`/admin/payments?${params}`);
       setPayments(res.data.data.payments || []);
       setPagination(res.data.data.pagination || { totalPages: 1, totalPayments: 0 });
     } catch (err) {
@@ -74,7 +74,7 @@ const AdminPayments = () => {
   const handleEditSave = async () => {
     setEditLoading(true);
     try {
-      await api.put(`/users/admin/payments/${editTarget._id}`, { status: editStatus });
+      await api.put(`/admin/payments/${editTarget._id}`, { status: editStatus });
       toast.success('Cập nhật trạng thái thành công');
       setEditTarget(null);
       fetchPayments();
@@ -88,7 +88,7 @@ const AdminPayments = () => {
   const handleDelete = async (payment) => {
     if (!window.confirm(`Xóa giao dịch ${payment.transactionId}? Hành động này không thể hoàn tác.`)) return;
     try {
-      await api.delete(`/users/admin/payments/${payment._id}`);
+      await api.delete(`/admin/payments/${payment._id}`);
       toast.success('Đã xóa giao dịch');
       fetchPayments();
     } catch (err) {

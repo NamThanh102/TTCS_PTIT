@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../services/api';
 import { getStatusLabel } from '../utils/statusHelper';
 import useAuthStore from '../store/authStore';
+import CommentSection from '../components/CommentSection';
 
 const ComicDetailPage = () => {
   const { slug } = useParams();
@@ -14,6 +15,7 @@ const ComicDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('chapters');
 
   useEffect(() => {
     if (!slug || slug === 'undefined') return;
@@ -188,33 +190,60 @@ const ComicDetailPage = () => {
         </div>
 
         <div className="bg-zinc-900/90 border border-zinc-800 rounded-xl shadow-lg p-6">
-          <h2 className="text-2xl font-bold text-gray-100 mb-4">Danh sách chương</h2>
+          <div className="flex items-center gap-6 border-b border-zinc-700 mb-4">
+            <button
+              type="button"
+              onClick={() => setActiveTab('chapters')}
+              className={`pb-3 text-sm font-semibold transition-colors ${
+                activeTab === 'chapters'
+                  ? 'border-b-2 border-red-500 text-red-300'
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              Danh sách chương ({chapters.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('comments')}
+              className={`pb-3 text-sm font-semibold transition-colors ${
+                activeTab === 'comments'
+                  ? 'border-b-2 border-red-500 text-red-300'
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              Bình luận
+            </button>
+          </div>
 
-          {chapters.length === 0 ? (
-            <p className="text-gray-400 text-center py-8">Chưa có chương nào</p>
-          ) : (
-            <div className="space-y-2">
-              {chapters.map((chapter) => (
-                <Link
-                  key={chapter._id}
-                  to={`/read/${chapter._id}`}
-                  className="flex items-center justify-between p-4 hover:bg-zinc-800 rounded-lg transition-colors group border border-zinc-800"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-gray-200 group-hover:text-cyan-400 font-medium">
-                      Chapter {chapter.chapterNumber}
-                      {chapter.title && `: ${chapter.title}`}
-                    </span>
-                    {chapter.isVIPOnly && (
-                      <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 text-xs font-semibold rounded border border-amber-500/30">
-                        VIP
+          {activeTab === 'chapters' ? (
+            chapters.length === 0 ? (
+              <p className="text-gray-400 text-center py-8">Chưa có chương nào</p>
+            ) : (
+              <div className="space-y-2">
+                {chapters.map((chapter) => (
+                  <Link
+                    key={chapter._id}
+                    to={`/read/${chapter._id}`}
+                    className="flex items-center justify-between p-4 hover:bg-zinc-800 rounded-lg transition-colors group border border-zinc-800"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-gray-200 group-hover:text-cyan-400 font-medium">
+                        Chapter {chapter.chapterNumber}
+                        {chapter.title && `: ${chapter.title}`}
                       </span>
-                    )}
-                  </div>
-                  <span className="text-sm text-gray-400">{new Date(chapter.createdAt).toLocaleDateString('vi-VN')}</span>
-                </Link>
-              ))}
-            </div>
+                      {chapter.isVIPOnly && (
+                        <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 text-xs font-semibold rounded border border-amber-500/30">
+                          VIP
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-sm text-gray-400">{new Date(chapter.createdAt).toLocaleDateString('vi-VN')}</span>
+                  </Link>
+                ))}
+              </div>
+            )
+          ) : (
+            <CommentSection comicId={comic._id} />
           )}
         </div>
       </div>

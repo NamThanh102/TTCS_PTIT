@@ -2,13 +2,12 @@ const User = require('../models/user');
 const Payment = require('../models/Payment');
 const Comic = require('../models/Comic');
 const Chapter = require('../models/Chapter');
+const Category = require('../models/Category');
+const mongoose = require('mongoose');
 const asyncHandler = require('../utils/asyncHandler');
 const { AppError } = require('../middlewares/errorHandler');
 const { successResponse } = require('../utils/responseHelper');
-
-const isVIPActive = (user) => {
-  return user.isVIP && user.vipExpireDate && user.vipExpireDate > new Date();
-};
+const { uploadToCloudinary } = require('../config/cloudinary');
 
 exports.getProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
@@ -23,11 +22,12 @@ exports.updateProfile = asyncHandler(async (req, res) => {
   if (bio !== undefined) updateData.bio = bio;
 
   if (req.file) {
-    updateData.avatar = req.file.path || req.file.url;
+    const result = await uploadToCloudinary(req.file.buffer, 'metruyen/avatars');
+    updateData.avatar = result.url;
   }
 
   const user = await User.findByIdAndUpdate(req.user._id, updateData, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true
   }).select('-password');
 
@@ -126,6 +126,10 @@ exports.addToHistory = asyncHandler(async (req, res, next) => {
     return next(new AppError('Chapter ID is required', 400));
   }
 
+  if (!mongoose.Types.ObjectId.isValid(chapterId)) {
+    return next(new AppError('Chapter ID is invalid', 400));
+  }
+
   let finalComicId = comicId;
   if (!finalComicId) {
     const chapter = await Chapter.findById(chapterId).select('comicId');
@@ -133,6 +137,10 @@ exports.addToHistory = asyncHandler(async (req, res, next) => {
       return next(new AppError('Chapter not found', 404));
     }
     finalComicId = chapter.comicId;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(finalComicId)) {
+    return next(new AppError('Comic ID is invalid', 400));
   }
 
   await User.findByIdAndUpdate(req.user._id, {
@@ -184,7 +192,7 @@ exports.rechargeMPoints = asyncHandler(async (req, res, next) => {
   const user = await User.findByIdAndUpdate(
     req.user._id,
     { $inc: { mPoints: amount } },
-    { new: true }
+    { returnDocument: 'after' }
   ).select('-password');
 
   successResponse(res, 200, `Nap ${amount.toLocaleString('vi-VN')} M-Point thanh cong`, {
@@ -363,7 +371,7 @@ exports.updateUserByAdmin = asyncHandler(async (req, res, next) => {
   }
 
   const user = await User.findByIdAndUpdate(req.params.userId, updateData, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true
   }).select('-password');
 

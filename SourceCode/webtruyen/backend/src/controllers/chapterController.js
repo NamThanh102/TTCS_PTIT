@@ -79,14 +79,22 @@ exports.createChapter = asyncHandler(async (req, res, next) => {
 });
 
 async function updateChapterNavigation(comicId) {
-  const chapters = await Chapter.find({ comicId }).sort({ chapterNumber: 1 });
+  const chapters = await Chapter.find({ comicId }).sort({ chapterNumber: 1 }).lean();
+  if (chapters.length === 0) return;
 
-  for (let i = 0; i < chapters.length; i += 1) {
-    await Chapter.findByIdAndUpdate(chapters[i]._id, {
-      previousChapter: i > 0 ? chapters[i - 1]._id : null,
-      nextChapter: i < chapters.length - 1 ? chapters[i + 1]._id : null
-    });
-  }
+  const bulkOps = chapters.map((ch, i) => ({
+    updateOne: {
+      filter: { _id: ch._id },
+      update: {
+        $set: {
+          previousChapter: i > 0 ? chapters[i - 1]._id : null,
+          nextChapter: i < chapters.length - 1 ? chapters[i + 1]._id : null
+        }
+      }
+    }
+  }));
+
+  await Chapter.bulkWrite(bulkOps);
 }
 
 exports.downloadChapter = asyncHandler(async (req, res, next) => {
@@ -164,10 +172,12 @@ exports.deleteChapter = asyncHandler(async (req, res, next) => {
   const comicId = chapter.comicId;
   await Chapter.deleteOne({ _id: chapterId });
 
-  // update navigation and counts
   await updateChapterNavigation(comicId);
   const comic = await Comic.findById(comicId);
-  if (comic) await comic.updateChapterCount();
+  if (comic) {
+    await comic.updateChapterCount();
+    await Comic.findByIdAndUpdate(comicId, { lastChapterUpdate: new Date() });
+  }
 
   successResponse(res, 200, 'Chapter deleted successfully');
 });

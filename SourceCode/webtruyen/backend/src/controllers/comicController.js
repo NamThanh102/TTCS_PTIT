@@ -156,6 +156,8 @@ exports.createComic = asyncHandler(async (req, res, next) => {
     'metruyen/covers'
   );
 
+  const parsedCategories = categories ? JSON.parse(categories) : [];
+
   const comic = await Comic.create({
     title,
     description,
@@ -165,13 +167,18 @@ exports.createComic = asyncHandler(async (req, res, next) => {
       url: coverImageResult.url,
       publicId: coverImageResult.publicId
     },
-    categories: categories ? JSON.parse(categories) : [],
+    categories: parsedCategories,
     tags: tags ? JSON.parse(tags) : [],
     status: status || 'ongoing',
     publicationYear,
     isPublished: true,
     createdBy: req.user._id
   });
+
+  await Category.updateMany(
+    { _id: { $in: parsedCategories } },
+    { $inc: { comicCount: 1 } }
+  );
 
   successResponse(res, 201, 'Comic created successfully', { comic });
 });
@@ -210,7 +217,7 @@ exports.updateComic = asyncHandler(async (req, res, next) => {
   }
 
   comic = await Comic.findByIdAndUpdate(req.params.id, updateData, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true
   });
 
@@ -231,6 +238,11 @@ exports.deleteComic = asyncHandler(async (req, res, next) => {
   await Chapter.deleteMany({ comicId: comic._id });
   await comic.deleteOne();
 
+  await Category.updateMany(
+    { _id: { $in: comic.categories } },
+    { $inc: { comicCount: -1 } }
+  );
+
   successResponse(res, 200, 'Comic deleted successfully');
 });
 
@@ -238,7 +250,7 @@ exports.increaseView = asyncHandler(async (req, res, next) => {
   const comic = await Comic.findByIdAndUpdate(
     req.params.id,
     { $inc: { 'statistics.totalViews': 1 } },
-    { new: true }
+    { returnDocument: 'after' }
   );
 
   if (!comic) {

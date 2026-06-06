@@ -36,7 +36,7 @@ const AdminUsers = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/users/admin/all', {
+      const response = await api.get('/admin/users', {
         params: {
           page: pagination.currentPage,
           limit: pagination.limit,
@@ -73,7 +73,7 @@ const AdminUsers = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      await api.put(`/users/admin/${selectedUser._id}`, formData);
+      await api.put(`/admin/users/${selectedUser._id}`, formData);
       toast.success('Cập nhật người dùng thành công');
       setShowModal(false);
       fetchUsers();
@@ -95,7 +95,7 @@ const AdminUsers = () => {
       return;
     }
     try {
-      await api.put(`/users/admin/${selectedUser._id}/password`, {
+      await api.put(`/admin/users/${selectedUser._id}/password`, {
         newPassword
       });
       toast.success('Đổi mật khẩu thành công');
@@ -110,7 +110,7 @@ const AdminUsers = () => {
     if (!window.confirm('Bạn có chắc muốn xóa người dùng này?')) return;
     
     try {
-      await api.delete(`/users/admin/${userId}`);
+      await api.delete(`/admin/users/${userId}`);
       toast.success('Xóa người dùng thành công');
       fetchUsers();
     } catch (error) {

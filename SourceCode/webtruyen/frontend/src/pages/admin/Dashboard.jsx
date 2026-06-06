@@ -18,7 +18,7 @@ const AdminDashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await api.get('/users/admin/stats');
+      const response = await api.get('/admin/stats');
       setStats(response.data.data);
     } catch (error) {
       toast.error('Không thể tải thống kê');

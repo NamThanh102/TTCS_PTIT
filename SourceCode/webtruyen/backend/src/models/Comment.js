@@ -1,0 +1,28 @@
+const mongoose = require('mongoose');
+
+const commentSchema = new mongoose.Schema({
+  comicId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Comic',
+    required: [true, 'Comic ID is required'],
+    index: true
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'User ID is required']
+  },
+  content: {
+    type: String,
+    required: [true, 'Content is required'],
+    trim: true,
+    maxlength: 1000
+  }
+}, {
+  timestamps: true,
+  collection: 'comments'
+});
+
+commentSchema.index({ comicId: 1, createdAt: -1 });
+
+module.exports = mongoose.model('Comment', commentSchema);

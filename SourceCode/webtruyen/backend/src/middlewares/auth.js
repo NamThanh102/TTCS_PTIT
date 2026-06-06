@@ -53,7 +53,7 @@ const isVIP = (req, res, next) => {
   }
 
   const now = new Date();
-  const vipExpire = req.user.vipExpireDate || req.user.vipExpiresAt;
+  const vipExpire = req.user.vipExpireDate;
   const vipActive = !!req.user.isVIP && (!vipExpire || now < new Date(vipExpire));
 
   if (!vipActive) {
