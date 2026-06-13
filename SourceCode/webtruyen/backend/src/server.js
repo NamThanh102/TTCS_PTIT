@@ -9,7 +9,7 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const chapterRoutes = require('./routes/chapterRoutes');
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
-const commentRoutes = require('./routes/commentRoutes');
+const { commentRouter, latestRouter } = require('./routes/commentRoutes');
 const { errorHandler } = require('./middlewares/errorHandler');
 const app = express();
 
@@ -24,7 +24,8 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/chapters', chapterRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/comics/:comicId/comments', commentRoutes);
+app.use('/api/comments/latest', latestRouter);
+app.use('/api/comics/:comicId/comments', commentRouter);
 
 app.use(errorHandler);
 

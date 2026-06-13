@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import api from '../services/api';
+import CommentSection from '../components/CommentSection';
 
 const ReaderPage = () => {
   const { chapterId } = useParams();
@@ -193,6 +194,13 @@ const ReaderPage = () => {
               Chương sau →
             </Link>
           </div>
+        </div>
+
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <CommentSection
+            comicId={chapter.comicId?._id || chapter.comicId}
+            chapterId={chapterId}
+          />
         </div>
       </div>
     </div>

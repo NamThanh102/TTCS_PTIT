@@ -4,6 +4,34 @@ import { useDropzone } from 'react-dropzone';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
+const readEntryRecursive = (entry) => {
+  return new Promise((resolve) => {
+    if (entry.isFile) {
+      entry.file((file) => {
+        resolve(file.type.startsWith('image/') ? [file] : []);
+      }, () => resolve([]));
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader();
+      const allEntries = [];
+      const readBatch = () => {
+        reader.readEntries((entries) => {
+          if (entries.length === 0) {
+            Promise.all(allEntries.map(readEntryRecursive)).then((results) =>
+              resolve(results.flat())
+            );
+          } else {
+            allEntries.push(...entries);
+            readBatch();
+          }
+        }, () => resolve([]));
+      };
+      readBatch();
+    } else {
+      resolve([]);
+    }
+  });
+};
+
 const ChapterUpload = () => {
   const navigate = useNavigate();
   const { comicId, chapterId } = useParams();
@@ -19,7 +47,6 @@ const ChapterUpload = () => {
   useEffect(() => {
     fetchComic();
     if (chapterId) fetchChapter();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [comicId, chapterId]);
 
   const fetchChapter = async () => {
@@ -52,12 +79,39 @@ const ChapterUpload = () => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'] },
-    onDrop: (acceptedFiles) => {
-      const newPages = acceptedFiles.map((file, index) => ({
+    onDrop: async (acceptedFiles, fileRejections, event) => {
+      const folderImages = [];
+      const items = event?.dataTransfer?.items;
+      if (items) {
+        const promises = [];
+        for (const item of items) {
+          const entry = item.webkitGetAsEntry?.();
+          if (entry?.isDirectory) {
+            promises.push(readEntryRecursive(entry));
+          }
+        }
+        const results = await Promise.all(promises);
+        folderImages.push(...results.flat());
+      }
+
+      const allFiles = [...acceptedFiles, ...folderImages];
+      const unique = allFiles.filter(
+        (f, i) => allFiles.findIndex((x) => x.name === f.name && x.size === f.size) === i
+      );
+      unique.sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })
+      );
+
+      const newPages = unique.map((file, index) => ({
         file,
         preview: URL.createObjectURL(file),
         order: pages.length + index + 1,
       }));
+
+      if (folderImages.length > 0 && acceptedFiles.length === 0) {
+        toast.success(`Đã đọc ${folderImages.length} ảnh từ thư mục`);
+      }
+
       setPages(prev => [...prev, ...newPages]);
     },
   });
@@ -92,7 +146,6 @@ const ChapterUpload = () => {
 
     try {
       if (chapterId) {
-        // Edit mode: currently only update metadata (title, isPublished/isVIPOnly)
         await api.put(`/chapters/${chapterId}`, {
           title: formData.title,
           isPublished: true,
@@ -141,7 +194,6 @@ const ChapterUpload = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Chapter Info */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
             <h2 className="text-xl font-bold text-gray-100 mb-4">Thông tin chương</h2>
             
@@ -188,33 +240,34 @@ const ChapterUpload = () => {
             </div>
           </div>
 
-          {/* Upload Area */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
             <h2 className="text-xl font-bold text-gray-100 mb-4">Kéo thả ảnh trang chương</h2>
             
             <div
               {...getRootProps()}
               className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${
-                isDragActive ? 'border-red-400 bg-red-900/10' : 'border-zinc-700 hover:border-red-400'
+                isDragActive ? 'border-green-400 bg-green-900/10' : 'border-zinc-700 hover:border-red-400'
               }`}
             >
               <input {...getInputProps()} />
               <div className="text-6xl mb-4">📤</div>
               {isDragActive ? (
-                <p className="text-lg text-red-400 font-medium">Thả ảnh vào đây...</p>
+                <p className="text-lg text-green-400 font-medium">Thả ảnh hoặc thư mục vào đây...</p>
               ) : (
                 <div>
                   <p className="text-lg text-gray-300 font-medium mb-2">
-                    Kéo thả ảnh vào đây hoặc click để chọn
+                    Kéo thả ảnh hoặc thư mục vào đây
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 mb-1">
                     Hỗ trợ: PNG, JPG, JPEG, GIF, WebP
+                  </p>
+                  <p className="text-sm text-cyan-400">
+                    💡 Kéo cả thư mục chứa ảnh — ảnh sẽ được đọc và sắp xếp tự động
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Pages Preview */}
             {pages.length > 0 && (
               <div className="mt-6">
                 <div className="flex items-center justify-between mb-4">
@@ -273,7 +326,6 @@ const ChapterUpload = () => {
             )}
           </div>
 
-          {/* Submit */}
           <div className="flex gap-3">
             <button
               type="submit"

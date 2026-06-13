@@ -31,7 +31,7 @@ const ComicCard = ({ comic }) => {
         className="rounded-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105"
         style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}
       >
-        <div className="aspect-[3/4] overflow-hidden" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+        <div className="aspect-[3/4] overflow-hidden relative" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
           <img
             src={getCoverUrl(comic.coverImage)}
             alt={comic.title}
@@ -41,6 +41,11 @@ const ComicCard = ({ comic }) => {
               e.currentTarget.src = '/assets/default-cover.png';
             }}
           />
+          {(comic.statistics?.totalChapters || 0) > 0 && (
+            <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded text-xs font-bold bg-black/70 text-white">
+              {comic.statistics.totalChapters} Ch
+            </span>
+          )}
         </div>
 
         <div className="p-3">

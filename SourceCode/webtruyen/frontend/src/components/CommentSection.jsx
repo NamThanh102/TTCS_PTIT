@@ -3,7 +3,7 @@ import api from '../services/api';
 import useAuthStore from '../store/authStore';
 import toast from 'react-hot-toast';
 
-const CommentSection = ({ comicId }) => {
+const CommentSection = ({ comicId, chapterId }) => {
   const user = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.token);
   const [comments, setComments] = useState([]);
@@ -13,16 +13,16 @@ const CommentSection = ({ comicId }) => {
   const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, totalComments: 0 });
 
   useEffect(() => {
-    if (!comicId) return;
+    if (!comicId && !chapterId) return;
     fetchComments();
-  }, [comicId, pagination.currentPage]);
+  }, [comicId, chapterId, pagination.currentPage]);
 
   const fetchComments = async () => {
     try {
       setLoading(true);
-      const res = await api.get(`/comics/${comicId}/comments`, {
-        params: { page: pagination.currentPage, limit: 20 }
-      });
+      const params = { page: pagination.currentPage, limit: 20 };
+      if (chapterId) params.chapterId = chapterId;
+      const res = await api.get(`/comics/${comicId}/comments`, { params });
       setComments(res.data.data.comments);
       setPagination(res.data.data.pagination);
     } catch {
@@ -41,7 +41,9 @@ const CommentSection = ({ comicId }) => {
 
     setSubmitting(true);
     try {
-      const res = await api.post(`/comics/${comicId}/comments`, { content: content.trim() });
+      const body = { content: content.trim() };
+      if (chapterId) body.chapterId = chapterId;
+      const res = await api.post(`/comics/${comicId}/comments`, body);
       setComments((prev) => [res.data.data.comment, ...prev]);
       setPagination((prev) => ({ ...prev, totalComments: prev.totalComments + 1 }));
       setContent('');
@@ -78,7 +80,7 @@ const CommentSection = ({ comicId }) => {
   return (
     <div>
       <h3 className="text-lg font-bold text-gray-100 mb-4">
-        Bình luận {pagination.totalComments > 0 && `(${pagination.totalComments})`}
+        Bình luận {chapterId ? 'chương này' : ''} {pagination.totalComments > 0 && `(${pagination.totalComments})`}
       </h3>
 
       {token ? (
@@ -129,7 +131,12 @@ const CommentSection = ({ comicId }) => {
                   <span className="font-semibold text-sm text-gray-200">
                     {comment.userId?.displayName || comment.userId?.username || 'Ẩn danh'}
                   </span>
-                  <span className="text-xs text-gray-500">{formatTime(comment.createdAt)}</span>
+                  {comment.chapterId && !chapterId && (
+                    <span className="text-xs text-cyan-500">
+                      Chương {comment.chapterId.chapterNumber}
+                    </span>
+                  )}
+                  <span className="text-xs text-gray-500 ml-auto">{formatTime(comment.createdAt)}</span>
                 </div>
                 <p className="text-gray-300 text-sm whitespace-pre-wrap break-words">{comment.content}</p>
                 {(user?._id === comment.userId?._id || user?.role === 'admin') && (

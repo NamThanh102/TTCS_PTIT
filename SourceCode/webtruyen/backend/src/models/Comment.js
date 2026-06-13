@@ -12,6 +12,11 @@ const commentSchema = new mongoose.Schema({
     ref: 'User',
     required: [true, 'User ID is required']
   },
+  chapterId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Chapter',
+    default: null
+  },
   content: {
     type: String,
     required: [true, 'Content is required'],
@@ -24,5 +29,6 @@ const commentSchema = new mongoose.Schema({
 });
 
 commentSchema.index({ comicId: 1, createdAt: -1 });
+commentSchema.index({ chapterId: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Comment', commentSchema);

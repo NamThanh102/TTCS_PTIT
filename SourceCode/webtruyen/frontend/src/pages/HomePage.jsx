@@ -62,7 +62,6 @@ const HomePage = () => {
     <div className="min-h-screen">
       {/* Hero Slider */}
       <div className="relative h-[420px] md:h-[520px] overflow-hidden border-b border-zinc-800/70">
-        {/* Slider images */}
         {SLIDER_IMAGES.map((img, i) => (
           <div
             key={img.src}
@@ -79,7 +78,6 @@ const HomePage = () => {
           </div>
         ))}
 
-        {/* Content */}
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
           <div style={{ animation: 'fadeInDown 0.8s ease-out' }}>
             <h1 className="text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg">
@@ -101,7 +99,6 @@ const HomePage = () => {
             </div>
           </div>
 
-          {/* Dot indicators */}
           <div className="flex justify-center gap-2 mt-6">
             {SLIDER_IMAGES.map((_, i) => (
               <button
@@ -117,100 +114,79 @@ const HomePage = () => {
       </div>
 
       <div className="container mx-auto px-4 py-16 relative z-10 min-h-screen">
-        {categories.length > 0 && (
-          <section className="mb-10">
-            <h2 className="text-2xl font-bold text-gray-100 mb-4 border-l-4 border-red-500 pl-3">Thể loại</h2>
-            <div className="flex flex-wrap gap-3">
-              {categories.slice(0, 12).map((category) => (
-                <Link
-                  key={category._id}
-                  to={`/comics?category=${category.slug}`}
-                  className="px-4 py-2 rounded-full bg-zinc-900/85 border border-zinc-700 text-sm text-gray-200 hover:border-red-400 hover:text-red-300 transition-colors"
-                >
-                  {category.name}
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
         {loading ? (
           <div className="text-center py-20">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4" style={{ borderColor: 'var(--border)', borderRightColor: '#ef4444' }} />
           </div>
         ) : (
           <>
+            {categories.length > 0 && (
+              <section className="mb-10">
+                <h2 className="text-2xl font-bold text-gray-100 mb-4 border-l-4 border-red-500 pl-3">Thể loại</h2>
+                <div className="flex flex-wrap gap-3">
+                  {categories.slice(0, 12).map((category) => (
+                    <Link
+                      key={category._id}
+                      to={`/comics?category=${category.slug}`}
+                      className="px-4 py-2 rounded-full bg-zinc-900/85 border border-zinc-700 text-sm text-gray-200 hover:border-red-400 hover:text-red-300 transition-colors"
+                    >
+                      {category.name}
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {featured.length > 0 && (
               <section className="mb-16">
-                <div className="flex items-center justify-between mb-8">
-                  <div>
-                    <h2 className="text-3xl font-bold text-gray-100 mb-4 border-l-4 border-red-500 pl-3" style={{ color: 'var(--text-primary)' }}>
+                <div className="mb-6">
+                  <h2 className="text-3xl font-bold border-l-4 border-red-500 pl-3">
+                    <Link to="/comics?sort=-statistics.totalViews" className="text-gray-100 hover:text-red-400 transition-colors">
                       Đề xuất cho bạn
-                    </h2>
-                    <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
-                      Những bộ truyện được đọc nhiều nhất
-                    </p>
-                  </div>
-                  <Link
-                    to="/comics?sort=-statistics.totalViews"
-                    className="font-medium transition-colors"
-                    style={{ color: '#ef4444' }}
-                  >
-                    Xem tất cả →
-                  </Link>
+                    </Link>
+                  </h2>
+                  <p className="text-gray-400 mt-2">
+                    Những bộ truyện được đọc nhiều nhất
+                  </p>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {featured.map((comic) => <ComicCard key={comic._id} comic={comic} />)}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                  {featured.slice(0, 6).map((comic) => <ComicCard key={comic._id} comic={comic} />)}
                 </div>
               </section>
             )}
 
             {latest.length > 0 && (
               <section className="mb-16">
-                <div className="flex items-center justify-between mb-8">
-                  <div>
-                    <h2 className="text-3xl font-bold text-gray-100 mb-4 border-l-4 border-red-500 pl-3" style={{ color: 'var(--text-primary)' }}>
+                <div className="mb-6">
+                  <h2 className="text-3xl font-bold border-l-4 border-red-500 pl-3">
+                    <Link to="/comics?sort=-lastChapterUpdate" className="text-gray-100 hover:text-red-400 transition-colors">
                       Truyện mới cập nhật
-                    </h2>
-                    <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
-                      Các chương mới nhất được thêm vào
-                    </p>
-                  </div>
-                  <Link
-                    to="/comics?sort=-updatedAt"
-                    className="font-medium transition-colors"
-                    style={{ color: '#ef4444' }}
-                  >
-                    Xem tất cả →
-                  </Link>
+                    </Link>
+                  </h2>
+                  <p className="text-gray-400 mt-2">
+                    Các chương mới nhất được thêm vào
+                  </p>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {latest.map((comic) => <ComicCard key={comic._id} comic={comic} />)}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                  {latest.slice(0, 6).map((comic) => <ComicCard key={comic._id} comic={comic} />)}
                 </div>
               </section>
             )}
 
             {popular.length > 0 && (
-              <section>
-                <div className="flex items-center justify-between mb-8">
-                  <div>
-                    <h2 className="text-3xl font-bold text-gray-100 mb-4 border-l-4 border-red-500 pl-3" style={{ color: 'var(--text-primary)' }}>
+              <section className="mb-16">
+                <div className="mb-6">
+                  <h2 className="text-3xl font-bold border-l-4 border-red-500 pl-3">
+                    <Link to="/comics?sort=-statistics.totalBookmarks" className="text-gray-100 hover:text-red-400 transition-colors">
                       Truyện được yêu thích nhất
-                    </h2>
-                    <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
-                      Truyện được lưu tủ nhiều nhất
-                    </p>
-                  </div>
-                  <Link
-                    to="/comics?sort=-statistics.totalBookmarks"
-                    className="font-medium transition-colors"
-                    style={{ color: '#ef4444' }}
-                  >
-                    Xem tất cả →
-                  </Link>
+                    </Link>
+                  </h2>
+                  <p className="text-gray-400 mt-2">
+                    Truyện được lưu tủ nhiều nhất
+                  </p>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {popular.map((comic) => <ComicCard key={comic._id} comic={comic} />)}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                  {popular.slice(0, 6).map((comic) => <ComicCard key={comic._id} comic={comic} />)}
                 </div>
               </section>
             )}

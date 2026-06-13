@@ -1,10 +1,13 @@
 const express = require('express');
-const router = express.Router({ mergeParams: true });
 const commentController = require('../controllers/commentController');
-const { verifyToken, isAdmin, optionalAuth } = require('../middlewares/auth');
+const { verifyToken } = require('../middlewares/auth');
 
-router.get('/', commentController.getComments);
-router.post('/', verifyToken, commentController.createComment);
-router.delete('/:commentId', verifyToken, commentController.deleteComment);
+const commentRouter = express.Router({ mergeParams: true });
+commentRouter.get('/', commentController.getComments);
+commentRouter.post('/', verifyToken, commentController.createComment);
+commentRouter.delete('/:commentId', verifyToken, commentController.deleteComment);
 
-module.exports = router;
+const latestRouter = express.Router();
+latestRouter.get('/', commentController.getLatestComments);
+
+module.exports = { commentRouter, latestRouter };
