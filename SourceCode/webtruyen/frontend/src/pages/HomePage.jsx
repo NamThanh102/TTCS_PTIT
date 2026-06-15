@@ -139,33 +139,43 @@ const HomePage = () => {
 
             {featured.length > 0 && (
               <section className="mb-16">
-                <div className="mb-6">
-                  <h2 className="text-3xl font-bold border-l-4 border-red-500 pl-3">
-                    <Link to="/comics?sort=-statistics.totalViews" className="text-gray-100 hover:text-red-400 transition-colors">
-                      Đề xuất cho bạn
-                    </Link>
-                  </h2>
-                  <p className="text-gray-400 mt-2">
-                    Những bộ truyện được đọc nhiều nhất
-                  </p>
+                <div className="mb-6 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-3xl font-bold border-l-4 border-red-500 pl-3">
+                      <Link to="/comics?sort=-statistics.totalViews" className="text-gray-100 hover:text-red-400 transition-colors">
+                        Đề xuất cho bạn
+                      </Link>
+                    </h2>
+                    <p className="text-gray-400 mt-2">
+                      Những bộ truyện được đọc nhiều nhất
+                    </p>
+                  </div>
+                  <Link to="/comics?sort=-statistics.totalViews" className="text-base text-cyan-400 hover:text-cyan-300 hover:underline whitespace-nowrap shrink-0 ml-4">
+                    Xem tất cả →
+                  </Link>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                  {featured.slice(0, 6).map((comic) => <ComicCard key={comic._id} comic={comic} />)}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  {featured.slice(0, 5).map((comic) => <ComicCard key={comic._id} comic={comic} />)}
                 </div>
               </section>
             )}
 
             {latest.length > 0 && (
               <section className="mb-16">
-                <div className="mb-6">
-                  <h2 className="text-3xl font-bold border-l-4 border-red-500 pl-3">
-                    <Link to="/comics?sort=-lastChapterUpdate" className="text-gray-100 hover:text-red-400 transition-colors">
-                      Truyện mới cập nhật
-                    </Link>
-                  </h2>
-                  <p className="text-gray-400 mt-2">
-                    Các chương mới nhất được thêm vào
-                  </p>
+                <div className="mb-6 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-3xl font-bold border-l-4 border-red-500 pl-3">
+                      <Link to="/comics?sort=-lastChapterUpdate" className="text-gray-100 hover:text-red-400 transition-colors">
+                        Truyện mới cập nhật
+                      </Link>
+                    </h2>
+                    <p className="text-gray-400 mt-2">
+                      Các chương mới nhất được thêm vào
+                    </p>
+                  </div>
+                  <Link to="/comics?sort=-lastChapterUpdate" className="text-base text-cyan-400 hover:text-cyan-300 hover:underline whitespace-nowrap shrink-0 ml-4">
+                    Xem tất cả →
+                  </Link>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                   {latest.slice(0, 6).map((comic) => <ComicCard key={comic._id} comic={comic} />)}
@@ -175,15 +185,20 @@ const HomePage = () => {
 
             {popular.length > 0 && (
               <section className="mb-16">
-                <div className="mb-6">
-                  <h2 className="text-3xl font-bold border-l-4 border-red-500 pl-3">
-                    <Link to="/comics?sort=-statistics.totalBookmarks" className="text-gray-100 hover:text-red-400 transition-colors">
-                      Truyện được yêu thích nhất
-                    </Link>
-                  </h2>
-                  <p className="text-gray-400 mt-2">
-                    Truyện được lưu tủ nhiều nhất
-                  </p>
+                <div className="mb-6 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-3xl font-bold border-l-4 border-red-500 pl-3">
+                      <Link to="/comics?sort=-statistics.totalBookmarks" className="text-gray-100 hover:text-red-400 transition-colors">
+                        Truyện được yêu thích nhất
+                      </Link>
+                    </h2>
+                    <p className="text-gray-400 mt-2">
+                      Truyện được lưu tủ nhiều nhất
+                    </p>
+                  </div>
+                  <Link to="/comics?sort=-statistics.totalBookmarks" className="text-base text-cyan-400 hover:text-cyan-300 hover:underline whitespace-nowrap shrink-0 ml-4">
+                    Xem tất cả →
+                  </Link>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                   {popular.slice(0, 6).map((comic) => <ComicCard key={comic._id} comic={comic} />)}

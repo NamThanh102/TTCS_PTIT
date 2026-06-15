@@ -4,7 +4,6 @@ const categoryController = require('../controllers/categoryController');
 const { verifyToken, isAdmin } = require('../middlewares/auth');
 
 router.get('/', categoryController.getAllCategories);
-router.get('/:slug', categoryController.getCategoryBySlug);
 
 router.post('/', verifyToken, isAdmin, categoryController.createCategory);
 router.put('/:id', verifyToken, isAdmin, categoryController.updateCategory);

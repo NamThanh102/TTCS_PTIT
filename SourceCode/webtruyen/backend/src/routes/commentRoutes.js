@@ -7,7 +7,4 @@ commentRouter.get('/', commentController.getComments);
 commentRouter.post('/', verifyToken, commentController.createComment);
 commentRouter.delete('/:commentId', verifyToken, commentController.deleteComment);
 
-const latestRouter = express.Router();
-latestRouter.get('/', commentController.getLatestComments);
-
-module.exports = { commentRouter, latestRouter };
+module.exports = commentRouter;

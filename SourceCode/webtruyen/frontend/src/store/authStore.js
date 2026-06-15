@@ -66,7 +66,7 @@ const useAuthStore = create((set) => ({
       const user = data.user;
 
       if (!token || !user) {
-        throw new Error('Phan hoi dang nhap khong hop le');
+        throw new Error('Phản hồi đăng nhập không hợp lệ');
       }
 
       if (typeof window !== 'undefined') {
@@ -83,7 +83,7 @@ const useAuthStore = create((set) => ({
 
       return { success: true };
     } catch (error) {
-      const message = error?.response?.data?.message || 'Dang nhap that bai';
+      const message = error?.response?.data?.message || 'Đăng nhập thất bại';
       set({ isLoading: false, error: message });
       return { success: false, message };
     }
@@ -97,7 +97,7 @@ const useAuthStore = create((set) => ({
       set({ isLoading: false, error: null, initialized: true });
       return { success: true };
     } catch (error) {
-      const message = error?.response?.data?.message || 'Dang ky that bai';
+      const message = error?.response?.data?.message || 'Đăng ký thất bại';
       set({ isLoading: false, error: message });
       return { success: false, message };
     }

@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import api from '../services/api';
-import { getStatusLabel } from '../utils/statusHelper';
-import useAuthStore from '../store/authStore';
-import CommentSection from '../components/CommentSection';
+import api from '../../services/api';
+import useAuthStore from '../../store/authStore';
+import CommentSection from '../../components/CommentSection';
 
 const ComicDetailPage = () => {
   const { slug } = useParams();
@@ -16,6 +15,7 @@ const ComicDetailPage = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('chapters');
+  const [commentCount, setCommentCount] = useState(0);
 
   useEffect(() => {
     if (!slug || slug === 'undefined') return;
@@ -31,6 +31,11 @@ const ComicDetailPage = () => {
         setComic(comicData);
         setChapters(chaptersRes.data.data || []);
         await api.post(`/comics/${comicData._id}/view`);
+
+        try {
+          const commentRes = await api.get(`/comics/${comicData._id}/comments?limit=1`);
+          setCommentCount(commentRes?.data?.data?.pagination?.totalComments || 0);
+        } catch { /* ignore */ }
 
         if (isAuthenticated) {
           try {
@@ -147,7 +152,7 @@ const ComicDetailPage = () => {
                           : 'bg-red-100 text-red-700'
                   }`}
                 >
-                  {getStatusLabel(comic.status)}
+                  {{'ongoing':'Đang cập nhật','completed':'Hoàn thành','hiatus':'Tạm dừng','cancelled':'Đã hủy'}[comic.status] || comic.status}
                 </span>
               </div>
 
@@ -211,7 +216,7 @@ const ComicDetailPage = () => {
                   : 'text-gray-400 hover:text-gray-200'
               }`}
             >
-              Bình luận
+              Bình luận ({commentCount})
             </button>
           </div>
 

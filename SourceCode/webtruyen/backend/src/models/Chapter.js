@@ -35,14 +35,6 @@ const chapterSchema = new mongoose.Schema({
       required: true
     }
   }],
-  totalPages: {
-    type: Number,
-    default: 0
-  },
-  uploadedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
   previousChapter: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Chapter',
@@ -83,7 +75,6 @@ chapterSchema.pre('save', function() {
     this.slug = `chapter-${this.chapterNumber}`;
   }
 
-  this.totalPages = this.pages.length;
 });
 
 chapterSchema.post('save', async function() {

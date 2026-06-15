@@ -3,7 +3,7 @@ const Comic = require('../models/Comic');
 const Chapter = require('../models/Chapter');
 const asyncHandler = require('../utils/asyncHandler');
 const { AppError } = require('../middlewares/errorHandler');
-const { successResponse } = require('../utils/responseHelper');
+
 
 exports.getComments = asyncHandler(async (req, res, next) => {
   const { comicId } = req.params;
@@ -27,7 +27,7 @@ exports.getComments = asyncHandler(async (req, res, next) => {
     Comment.countDocuments(filter)
   ]);
 
-  successResponse(res, 200, 'Comments retrieved', {
+  res.status(200).json({ success: true, statusCode: 200, message: 'Comments retrieved', data: {
     comments,
     pagination: {
       currentPage: page,
@@ -35,7 +35,7 @@ exports.getComments = asyncHandler(async (req, res, next) => {
       totalComments: total,
       limit
     }
-  });
+  } });
 });
 
 exports.createComment = asyncHandler(async (req, res, next) => {
@@ -67,19 +67,7 @@ exports.createComment = asyncHandler(async (req, res, next) => {
     .populate('userId', 'username avatar displayName')
     .populate('chapterId', 'chapterNumber title');
 
-  successResponse(res, 201, 'Bình luận thành công', { comment: populated });
-});
-
-exports.getLatestComments = asyncHandler(async (req, res, next) => {
-  const comments = await Comment.find()
-    .populate('userId', 'username avatar displayName')
-    .populate('comicId', 'title slug')
-    .populate('chapterId', 'chapterNumber title')
-    .sort({ createdAt: -1 })
-    .limit(30)
-    .lean();
-
-  successResponse(res, 200, 'Latest comments', { comments });
+  res.status(201).json({ success: true, statusCode: 201, message: 'Bình luận thành công', data: { comment: populated } });
 });
 
 exports.deleteComment = asyncHandler(async (req, res, next) => {
@@ -94,5 +82,5 @@ exports.deleteComment = asyncHandler(async (req, res, next) => {
 
   await comment.deleteOne();
 
-  successResponse(res, 200, 'Xóa bình luận thành công');
+  res.status(200).json({ success: true, statusCode: 200, message: 'Xóa bình luận thành công' });
 });

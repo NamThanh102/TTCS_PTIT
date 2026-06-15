@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
-import api from '../services/api';
+import api from '../../services/api';
 import toast from 'react-hot-toast';
-import useAuthStore from '../store/authStore';
+import useAuthStore from '../../store/authStore';
 
 const ProfilePage = () => {
   const user = useAuthStore((state) => state.user);

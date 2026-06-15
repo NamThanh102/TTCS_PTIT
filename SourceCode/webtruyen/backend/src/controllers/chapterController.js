@@ -2,11 +2,8 @@ const Chapter = require('../models/Chapter');
 const Comic = require('../models/Comic');
 const asyncHandler = require('../utils/asyncHandler');
 const { AppError } = require('../middlewares/errorHandler');
-const { successResponse } = require('../utils/responseHelper');
-const { uploadToCloudinary } = require('../config/cloudinary');
-const { deleteFromCloudinary } = require('../config/cloudinary');
-const archiver = require('archiver');
-const axios = require('axios');
+
+const { uploadToCloudinary, deleteFromCloudinary } = require('../config/cloudinary');
 
 exports.getChapterById = asyncHandler(async (req, res, next) => {
   const chapter = await Chapter.findById(req.params.id)
@@ -18,10 +15,18 @@ exports.getChapterById = asyncHandler(async (req, res, next) => {
     return next(new AppError('Chapter not found', 404));
   }
 
+  if (chapter.isVIPOnly) {
+    const now = new Date();
+    const isVipActive = req.user?.isVIP && (!req.user?.vipExpireDate || now < new Date(req.user.vipExpireDate));
+    if (!isVipActive) {
+      return next(new AppError('Chapter này yêu cầu tài khoản VIP', 403));
+    }
+  }
+
   chapter.views += 1;
   await chapter.save({ validateBeforeSave: false });
 
-  successResponse(res, 200, 'Chapter retrieved successfully', { chapter });
+  res.status(200).json({ success: true, statusCode: 200, message: 'Chapter retrieved successfully', data: { chapter } });
 });
 
 exports.createChapter = asyncHandler(async (req, res, next) => {
@@ -66,16 +71,15 @@ exports.createChapter = asyncHandler(async (req, res, next) => {
     chapterNumber,
     title,
     pages,
-    isPublished: isPublished !== undefined ? isPublished : true,
-    publishDate: isPublished !== false ? Date.now() : null,
-    isVIPOnly: isVIPOnly !== undefined ? isVIPOnly : false,
-    uploadedBy: req.user._id
+    isPublished: isPublished !== undefined ? (isPublished === 'true' || isPublished === true) : true,
+    publishDate: isPublished !== 'false' && isPublished !== false ? Date.now() : null,
+    isVIPOnly: isVIPOnly !== undefined ? (isVIPOnly === 'true' || isVIPOnly === true) : false
   });
 
   await updateChapterNavigation(comicId);
   await comic.updateChapterCount();
 
-  successResponse(res, 201, 'Chapter created successfully', { chapter });
+  res.status(201).json({ success: true, statusCode: 201, message: 'Chapter created successfully', data: { chapter } });
 });
 
 async function updateChapterNavigation(comicId) {
@@ -97,59 +101,65 @@ async function updateChapterNavigation(comicId) {
   await Chapter.bulkWrite(bulkOps);
 }
 
-exports.downloadChapter = asyncHandler(async (req, res, next) => {
-  const chapter = await Chapter.findById(req.params.id).populate('comicId', 'title');
-
-  if (!chapter) {
-    return next(new AppError('Chapter not found', 404));
-  }
-
-  const archive = archiver('zip', {
-    zlib: { level: 9 }
-  });
-
-  res.setHeader('Content-Type', 'application/zip');
-  res.setHeader(
-    'Content-Disposition',
-    `attachment; filename="${chapter.comicId.title}-Chapter-${chapter.chapterNumber}.zip"`
-  );
-
-  archive.pipe(res);
-
-  for (const [index, page] of chapter.pages.entries()) {
-    try {
-      const response = await axios.get(page.url, { responseType: 'arraybuffer' });
-      const extension = page.url.split('.').pop().split('?')[0];
-      archive.append(response.data, {
-        name: `page-${String(index + 1).padStart(3, '0')}.${extension}`
-      });
-    } catch (error) {
-      console.error(`Error downloading page ${index + 1}:`, error.message);
-    }
-  }
-
-  await archive.finalize();
-});
-
-module.exports = exports;
-
 exports.updateChapter = asyncHandler(async (req, res, next) => {
   const chapterId = req.params.id;
-  const { title, isPublished, isVIPOnly } = req.body;
+  const { title, isPublished, isVIPOnly, keptPages } = req.body;
 
   const chapter = await Chapter.findById(chapterId);
   if (!chapter) return next(new AppError('Chapter not found', 404));
 
   if (title !== undefined) chapter.title = title;
   if (isPublished !== undefined) {
-    chapter.isPublished = !!isPublished;
+    chapter.isPublished = isPublished === 'true' || isPublished === true;
     chapter.publishDate = chapter.isPublished ? (chapter.publishDate || Date.now()) : null;
   }
-  if (isVIPOnly !== undefined) chapter.isVIPOnly = !!isVIPOnly;
+  if (isVIPOnly !== undefined) chapter.isVIPOnly = isVIPOnly === 'true' || isVIPOnly === true;
+
+  if (keptPages !== undefined) {
+    let keptList = [];
+    try { keptList = JSON.parse(keptPages); } catch {}
+    const keptIds = keptList.map(k => k._id);
+
+    const toRemove = chapter.pages.filter(p => !keptIds.includes(p._id.toString()));
+    for (const page of toRemove) {
+      if (page.publicId) {
+        try { await deleteFromCloudinary(page.publicId); } catch {}
+      }
+    }
+
+    const keptMap = {};
+    chapter.pages.forEach(p => { keptMap[p._id.toString()] = p; });
+    chapter.pages = keptList
+      .filter(k => keptMap[k._id])
+      .map((k, i) => {
+        const p = keptMap[k._id];
+        p.order = i + 1;
+        return p;
+      });
+  }
+
+  if (req.files && req.files.length > 0) {
+    const comic = await Comic.findById(chapter.comicId).select('slug');
+    const startOrder = chapter.pages.length + 1;
+    const uploadPromises = req.files.map((file, index) =>
+      uploadToCloudinary(
+        file.buffer,
+        `metruyen/comics/${comic.slug}/chapter-${chapter.chapterNumber}`
+      ).then(result => ({
+        url: result.url,
+        publicId: result.publicId,
+        width: result.width,
+        height: result.height,
+        order: startOrder + index
+      }))
+    );
+    const newPages = await Promise.all(uploadPromises);
+    chapter.pages.push(...newPages);
+  }
 
   await chapter.save();
 
-  successResponse(res, 200, 'Chapter updated successfully', { chapter });
+  res.status(200).json({ success: true, statusCode: 200, message: 'Chapter updated successfully', data: { chapter } });
 });
 
 exports.deleteChapter = asyncHandler(async (req, res, next) => {
@@ -179,5 +189,5 @@ exports.deleteChapter = asyncHandler(async (req, res, next) => {
     await Comic.findByIdAndUpdate(comicId, { lastChapterUpdate: new Date() });
   }
 
-  successResponse(res, 200, 'Chapter deleted successfully');
+  res.status(200).json({ success: true, statusCode: 200, message: 'Chapter deleted successfully' });
 });

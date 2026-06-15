@@ -6,12 +6,12 @@ const Category = require('../models/Category');
 const mongoose = require('mongoose');
 const asyncHandler = require('../utils/asyncHandler');
 const { AppError } = require('../middlewares/errorHandler');
-const { successResponse } = require('../utils/responseHelper');
+
 const { uploadToCloudinary } = require('../config/cloudinary');
 
 exports.getProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
-  successResponse(res, 200, 'Profile retrieved successfully', { user });
+  res.status(200).json({ success: true, statusCode: 200, message: 'Profile retrieved successfully', data: { user } });
 });
 
 exports.updateProfile = asyncHandler(async (req, res) => {
@@ -31,7 +31,7 @@ exports.updateProfile = asyncHandler(async (req, res) => {
     runValidators: true
   }).select('-password');
 
-  successResponse(res, 200, 'Profile updated successfully', { user });
+  res.status(200).json({ success: true, statusCode: 200, message: 'Profile updated successfully', data: { user } });
 });
 
 exports.changePassword = asyncHandler(async (req, res, next) => {
@@ -51,7 +51,7 @@ exports.changePassword = asyncHandler(async (req, res, next) => {
   user.password = newPassword;
   await user.save();
 
-  successResponse(res, 200, 'Password changed successfully');
+  res.status(200).json({ success: true, statusCode: 200, message: 'Password changed successfully' });
 });
 
 exports.toggleBookmark = asyncHandler(async (req, res, next) => {
@@ -94,7 +94,7 @@ exports.toggleBookmark = asyncHandler(async (req, res, next) => {
 
   await user.save();
 
-  successResponse(res, 200, message, { bookmarks: user.library.bookmarks });
+  res.status(200).json({ success: true, statusCode: 200, message, data: { bookmarks: user.library.bookmarks } });
 });
 
 exports.getLibrary = asyncHandler(async (req, res) => {
@@ -112,10 +112,10 @@ exports.getLibrary = asyncHandler(async (req, res) => {
       select: 'chapterNumber title'
     });
 
-  successResponse(res, 200, 'Library retrieved successfully', {
+  res.status(200).json({ success: true, statusCode: 200, message: 'Library retrieved successfully', data: {
     bookmarks: user.library.bookmarks,
     history: user.library.history
-  });
+  } });
 });
 
 exports.addToHistory = asyncHandler(async (req, res, next) => {
@@ -162,23 +162,23 @@ exports.addToHistory = asyncHandler(async (req, res, next) => {
     }
   });
 
-  successResponse(res, 200, 'Added to reading history');
+  res.status(200).json({ success: true, statusCode: 200, message: 'Added to reading history' });
 });
 
 exports.rechargeMPoints = asyncHandler(async (req, res, next) => {
   const { amount, paymentMethod, transactionId } = req.body;
 
   if (!amount || amount <= 0) {
-    return next(new AppError('So tien khong hop le', 400));
+    return next(new AppError('Số tiền không hợp lệ', 400));
   }
 
   if (!transactionId || transactionId.trim() === '') {
-    return next(new AppError('Ma giao dich khong duoc de trong', 400));
+    return next(new AppError('Mã giao dịch không được để trống', 400));
   }
 
   const existing = await Payment.findOne({ transactionId: transactionId.trim() });
   if (existing) {
-    return next(new AppError('Ma giao dich da duoc su dung', 400));
+    return next(new AppError('Mã giao dịch đã được sử dụng', 400));
   }
 
   const payment = await Payment.create({
@@ -195,17 +195,17 @@ exports.rechargeMPoints = asyncHandler(async (req, res, next) => {
     { returnDocument: 'after' }
   ).select('-password');
 
-  successResponse(res, 200, `Nap ${amount.toLocaleString('vi-VN')} M-Point thanh cong`, {
+  res.status(200).json({ success: true, statusCode: 200, message: `Nạp ${amount.toLocaleString('vi-VN')} M-Point thành công`, data: {
     payment,
     newBalance: user.mPoints
-  });
+  } });
 });
 
 exports.upgradeVIP = asyncHandler(async (req, res, next) => {
   const { duration, points } = req.body;
 
   if (!duration || !points) {
-    return next(new AppError('Thieu thong tin goi VIP', 400));
+    return next(new AppError('Thiếu thông tin gói VIP', 400));
   }
 
   const validPackages = {
@@ -217,13 +217,13 @@ exports.upgradeVIP = asyncHandler(async (req, res, next) => {
   };
 
   if (validPackages[duration] !== points) {
-    return next(new AppError('Goi VIP khong hop le', 400));
+    return next(new AppError('Gói VIP không hợp lệ', 400));
   }
 
   const user = await User.findById(req.user._id);
 
   if (user.mPoints < points) {
-    return next(new AppError(`Khong du M-Point. Can ${points.toLocaleString('vi-VN')} M-Point`, 400));
+    return next(new AppError(`Không đủ M-Point. Cần ${points.toLocaleString('vi-VN')} M-Point`, 400));
   }
 
   user.mPoints -= points;
@@ -241,11 +241,11 @@ exports.upgradeVIP = asyncHandler(async (req, res, next) => {
   user.vipExpireDate = newExpireDate;
   await user.save();
 
-  successResponse(res, 200, `Nang cap VIP thanh cong! Co hieu luc den ${newExpireDate.toLocaleDateString('vi-VN')}`, {
+  res.status(200).json({ success: true, statusCode: 200, message: `Nâng cấp VIP thành công! Có hiệu lực đến ${newExpireDate.toLocaleDateString('vi-VN')}`, data: {
     vipExpireDate: newExpireDate,
     mPointsSpent: points,
     mPointsRemaining: user.mPoints
-  });
+  } });
 });
 
 exports.getStats = asyncHandler(async (req, res) => {
@@ -266,12 +266,12 @@ exports.getStats = asyncHandler(async (req, res) => {
     ])
   ]);
 
-  successResponse(res, 200, 'Stats retrieved successfully', {
+  res.status(200).json({ success: true, statusCode: 200, message: 'Stats retrieved successfully', data: {
     totalComics,
     totalUsers,
     vipUsers,
     totalViews: viewStats.length > 0 ? viewStats[0].totalViews : 0
-  });
+  } });
 });
 
 exports.getAllUsers = asyncHandler(async (req, res) => {
@@ -314,7 +314,7 @@ exports.getAllUsers = asyncHandler(async (req, res) => {
     User.countDocuments(query)
   ]);
 
-  successResponse(res, 200, 'Users retrieved successfully', {
+  res.status(200).json({ success: true, statusCode: 200, message: 'Users retrieved successfully', data: {
     users,
     pagination: {
       currentPage: page,
@@ -322,20 +322,7 @@ exports.getAllUsers = asyncHandler(async (req, res) => {
       totalUsers: total,
       limit
     }
-  });
-});
-
-exports.getUserById = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.params.userId)
-    .select('-password')
-    .populate('library.bookmarks.comicId', 'title slug')
-    .populate('library.history.comicId', 'title slug');
-
-  if (!user) {
-    return next(new AppError('User not found', 404));
-  }
-
-  successResponse(res, 200, 'User retrieved successfully', { user });
+  } });
 });
 
 exports.updateUserByAdmin = asyncHandler(async (req, res, next) => {
@@ -379,7 +366,7 @@ exports.updateUserByAdmin = asyncHandler(async (req, res, next) => {
     return next(new AppError('User not found', 404));
   }
 
-  successResponse(res, 200, 'User updated successfully', { user });
+  res.status(200).json({ success: true, statusCode: 200, message: 'User updated successfully', data: { user } });
 });
 
 exports.changeUserPasswordByAdmin = asyncHandler(async (req, res, next) => {
@@ -398,7 +385,7 @@ exports.changeUserPasswordByAdmin = asyncHandler(async (req, res, next) => {
   user.password = newPassword;
   await user.save();
 
-  successResponse(res, 200, 'Password changed successfully');
+  res.status(200).json({ success: true, statusCode: 200, message: 'Password changed successfully' });
 });
 
 exports.deleteUser = asyncHandler(async (req, res, next) => {
@@ -414,7 +401,7 @@ exports.deleteUser = asyncHandler(async (req, res, next) => {
 
   await user.deleteOne();
 
-  successResponse(res, 200, 'User deleted successfully');
+  res.status(200).json({ success: true, statusCode: 200, message: 'User deleted successfully' });
 });
 
 exports.getAdminPayments = asyncHandler(async (req, res) => {
@@ -441,7 +428,7 @@ exports.getAdminPayments = asyncHandler(async (req, res) => {
     Payment.countDocuments(query)
   ]);
 
-  successResponse(res, 200, 'Payments retrieved', {
+  res.status(200).json({ success: true, statusCode: 200, message: 'Payments retrieved', data: {
     payments,
     pagination: {
       currentPage: page,
@@ -449,7 +436,7 @@ exports.getAdminPayments = asyncHandler(async (req, res) => {
       totalPayments: total,
       limit
     }
-  });
+  } });
 });
 
 exports.updateAdminPayment = asyncHandler(async (req, res, next) => {
@@ -458,19 +445,19 @@ exports.updateAdminPayment = asyncHandler(async (req, res, next) => {
 
   const allowed = ['pending', 'success', 'failed', 'refunded'];
   if (!allowed.includes(status)) {
-    return next(new AppError('Trang thai khong hop le', 400));
+    return next(new AppError('Trạng thái không hợp lệ', 400));
   }
 
   const payment = await Payment.findById(paymentId);
   if (!payment) {
-    return next(new AppError('Khong tim thay giao dich', 404));
+    return next(new AppError('Không tìm thấy giao dịch', 404));
   }
 
   payment.status = status;
   if (status === 'success' && !payment.processedAt) payment.processedAt = new Date();
   await payment.save();
 
-  successResponse(res, 200, 'Cap nhat trang thai thanh cong', { payment });
+  res.status(200).json({ success: true, statusCode: 200, message: 'Cập nhật trạng thái thành công', data: { payment } });
 });
 
 exports.deleteAdminPayment = asyncHandler(async (req, res, next) => {
@@ -478,10 +465,10 @@ exports.deleteAdminPayment = asyncHandler(async (req, res, next) => {
 
   const payment = await Payment.findByIdAndDelete(paymentId);
   if (!payment) {
-    return next(new AppError('Khong tim thay giao dich', 404));
+    return next(new AppError('Không tìm thấy giao dịch', 404));
   }
 
-  successResponse(res, 200, 'Da xoa giao dich thanh cong');
+  res.status(200).json({ success: true, statusCode: 200, message: 'Đã xóa giao dịch thành công' });
 });
 
 module.exports = exports;

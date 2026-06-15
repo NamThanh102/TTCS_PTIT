@@ -1,11 +1,12 @@
 {
-  "name": "backend",
+  "name": "metruyen-backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "seed": "node seed.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -13,8 +14,6 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "archiver": "^7.0.1",
-    "axios": "^1.8.4",
     "cloudinary": "^2.8.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",

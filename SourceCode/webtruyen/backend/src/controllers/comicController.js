@@ -3,7 +3,7 @@ const Chapter = require('../models/Chapter');
 const Category = require('../models/Category');
 const asyncHandler = require('../utils/asyncHandler');
 const { AppError } = require('../middlewares/errorHandler');
-const { successResponse, paginatedResponse } = require('../utils/responseHelper');
+
 const { uploadToCloudinary, deleteFromCloudinary } = require('../config/cloudinary');
 const mongoose = require('mongoose');
 
@@ -61,12 +61,12 @@ exports.getAllComics = asyncHandler(async (req, res, next) => {
 
   const totalComics = await Comic.countDocuments(query);
 
-  paginatedResponse(res, 200, 'Comics retrieved successfully', comics, {
+  res.status(200).json({ success: true, statusCode: 200, message: 'Comics retrieved successfully', data: comics, pagination: {
     currentPage: parseInt(page, 10),
     totalPages: Math.ceil(totalComics / limit),
     totalItems: totalComics,
     itemsPerPage: parseInt(limit, 10)
-  });
+  } });
 });
 
 exports.getComicBySlug = asyncHandler(async (req, res, next) => {
@@ -78,7 +78,7 @@ exports.getComicBySlug = asyncHandler(async (req, res, next) => {
     return next(new AppError('Comic not found', 404));
   }
 
-  successResponse(res, 200, 'Comic retrieved successfully', comic);
+  res.status(200).json({ success: true, statusCode: 200, message: 'Comic retrieved successfully', data: comic });
 });
 
 exports.getChaptersBySlug = asyncHandler(async (req, res, next) => {
@@ -93,7 +93,7 @@ exports.getChaptersBySlug = asyncHandler(async (req, res, next) => {
     .sort({ chapterNumber: 1 })
     .lean();
 
-  successResponse(res, 200, 'Chapters retrieved successfully', chapters);
+  res.status(200).json({ success: true, statusCode: 200, message: 'Chapters retrieved successfully', data: chapters });
 });
 
 exports.getChaptersByComicId = asyncHandler(async (req, res, next) => {
@@ -108,7 +108,7 @@ exports.getChaptersByComicId = asyncHandler(async (req, res, next) => {
     .sort({ chapterNumber: 1 })
     .lean();
 
-  successResponse(res, 200, 'Chapters retrieved successfully', chapters);
+  res.status(200).json({ success: true, statusCode: 200, message: 'Chapters retrieved successfully', data: chapters });
 });
 
 exports.getComicById = asyncHandler(async (req, res, next) => {
@@ -125,10 +125,10 @@ exports.getComicById = asyncHandler(async (req, res, next) => {
     .sort({ chapterNumber: 1 })
     .lean();
 
-  successResponse(res, 200, 'Comic retrieved successfully', {
+  res.status(200).json({ success: true, statusCode: 200, message: 'Comic retrieved successfully', data: {
     comic,
     chapters
-  });
+  } });
 });
 
 exports.createComic = asyncHandler(async (req, res, next) => {
@@ -180,7 +180,7 @@ exports.createComic = asyncHandler(async (req, res, next) => {
     { $inc: { comicCount: 1 } }
   );
 
-  successResponse(res, 201, 'Comic created successfully', { comic });
+  res.status(201).json({ success: true, statusCode: 201, message: 'Comic created successfully', data: { comic } });
 });
 
 exports.updateComic = asyncHandler(async (req, res, next) => {
@@ -221,7 +221,7 @@ exports.updateComic = asyncHandler(async (req, res, next) => {
     runValidators: true
   });
 
-  successResponse(res, 200, 'Comic updated successfully', { comic });
+  res.status(200).json({ success: true, statusCode: 200, message: 'Comic updated successfully', data: { comic } });
 });
 
 exports.deleteComic = asyncHandler(async (req, res, next) => {
@@ -243,7 +243,7 @@ exports.deleteComic = asyncHandler(async (req, res, next) => {
     { $inc: { comicCount: -1 } }
   );
 
-  successResponse(res, 200, 'Comic deleted successfully');
+  res.status(200).json({ success: true, statusCode: 200, message: 'Comic deleted successfully' });
 });
 
 exports.increaseView = asyncHandler(async (req, res, next) => {
@@ -257,9 +257,9 @@ exports.increaseView = asyncHandler(async (req, res, next) => {
     return next(new AppError('Comic not found', 404));
   }
 
-  successResponse(res, 200, 'View count updated', {
+  res.status(200).json({ success: true, statusCode: 200, message: 'View count updated', data: {
     totalViews: comic.statistics.totalViews
-  });
+  } });
 });
 
 module.exports = exports;

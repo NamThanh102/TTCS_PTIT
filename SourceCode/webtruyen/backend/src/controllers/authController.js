@@ -2,8 +2,6 @@ const User = require('../models/user');
 const { generateToken } = require('../utils/jwt');
 const asyncHandler = require('../utils/asyncHandler');
 const { AppError } = require('../middlewares/errorHandler');
-const { successResponse } = require('../utils/responseHelper');
-
 exports.register = asyncHandler(async (req, res, next) => {
   const { username, email, password } = req.body;
   const existingUser = await User.findOne({
@@ -16,7 +14,7 @@ exports.register = asyncHandler(async (req, res, next) => {
   const user = await User.create({ username, email, password });
   const token = generateToken(user._id);
 
-  successResponse(res, 201, 'Đăng ký thành công', {
+  res.status(201).json({ success: true, statusCode: 201, message: 'Đăng ký thành công', data: {
     user: {
       id: user._id,
       username: user.username,
@@ -24,7 +22,7 @@ exports.register = asyncHandler(async (req, res, next) => {
       role: user.role
     },
     token
-  });
+  } });
 });
 
 exports.login = asyncHandler(async (req, res, next) => {
@@ -41,7 +39,7 @@ exports.login = asyncHandler(async (req, res, next) => {
   }
 
   const token = generateToken(user._id);
-  successResponse(res, 200, 'Đăng nhập thành công', {
+  res.status(200).json({ success: true, statusCode: 200, message: 'Đăng nhập thành công', data: {
     user: {
       id: user._id,
       username: user.username,
@@ -54,13 +52,13 @@ exports.login = asyncHandler(async (req, res, next) => {
       displayName: user.displayName
     },
     token
-  });
+  } });
 });
 
 exports.getMe = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user._id);
 
-  successResponse(res, 200, null, {
+  res.status(200).json({ success: true, statusCode: 200, data: {
     user: {
       id: user._id,
       username: user.username,
@@ -72,5 +70,5 @@ exports.getMe = asyncHandler(async (req, res, next) => {
       avatar: user.avatar,
       displayName: user.displayName
     }
-  });
+  } });
 });

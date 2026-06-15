@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../services/api';
+import api from '../../services/api';
 import { FaHistory } from 'react-icons/fa';
 
 const HistoryPage = () => {
@@ -37,60 +37,19 @@ const HistoryPage = () => {
     fetchHistory();
   }, []);
 
-  const buildLocalHistory = () => {
-    try {
-      const readingHistory = JSON.parse(localStorage.getItem('readingHistory') || '{}');
-      return Object.values(readingHistory)
-        .map((item) => ({
-          _id: item.chapterId || item.comicSlug || item.comicTitle,
-          comicId: {
-            title: item.comicTitle,
-            slug: item.comicSlug,
-            coverImage: item.coverImage
-          },
-          chapterId: {
-            _id: item.chapterId,
-            chapterNumber: item.chapterNumber,
-            title: item.chapterTitle
-          },
-          lastReadAt: item.timestamp
-        }))
-        .filter((item) => item.comicId?.title && item.chapterId?._id);
-    } catch {
-      return [];
-    }
-  };
-
   const fetchHistory = async () => {
-    let serverHistory = [];
-
     try {
       const response = await api.get('/users/library');
+      console.log('Library API response:', response.data);
       const data = response.data.data;
-      serverHistory = Array.isArray(data.history) ? data.history : [];
-    } catch {
-      serverHistory = [];
+      const serverHistory = Array.isArray(data.history) ? data.history : [];
+      console.log('Server history count:', serverHistory.length);
+      serverHistory.sort((a, b) => new Date(b.lastReadAt) - new Date(a.lastReadAt));
+      setHistory(serverHistory);
+    } catch (err) {
+      console.error('Fetch history failed:', err.response?.data || err.message);
+      setHistory([]);
     } finally {
-      const localHistory = buildLocalHistory();
-      const mergedHistory = [...serverHistory];
-
-      for (const localItem of localHistory) {
-        const exists = mergedHistory.some((serverItem) => {
-          const serverComicSlug = serverItem.comicId?.slug;
-          const serverChapterId = serverItem.chapterId?._id || serverItem.chapterId;
-          return (
-            (serverComicSlug && serverComicSlug === localItem.comicId?.slug) ||
-            String(serverChapterId) === String(localItem.chapterId?._id)
-          );
-        });
-
-        if (!exists) {
-          mergedHistory.push(localItem);
-        }
-      }
-
-      mergedHistory.sort((a, b) => new Date(b.lastReadAt) - new Date(a.lastReadAt));
-      setHistory(mergedHistory);
       setLoading(false);
     }
   };

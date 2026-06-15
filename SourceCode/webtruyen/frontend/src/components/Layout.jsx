@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { FaHome, FaBook, FaHeart, FaHistory, FaCoins, FaCog, FaSearch, FaChevronDown, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
 import useAuthStore from '../store/authStore';
@@ -10,6 +10,10 @@ const Layout = () => {
   const logout = useAuthStore((state) => state.logout);
   const [searchValue, setSearchValue] = useState('');
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   const isActive = (path) => location.pathname === path;
 

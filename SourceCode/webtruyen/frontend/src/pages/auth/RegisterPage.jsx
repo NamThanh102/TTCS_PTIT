@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import useAuthStore from '../store/authStore';
+import useAuthStore from '../../store/authStore';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -38,7 +38,7 @@ const RegisterPage = () => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      setClientError('Mat khau xac nhan khong khop');
+      setClientError('Mật khẩu xác nhận không khớp');
       return;
     }
 
@@ -49,7 +49,7 @@ const RegisterPage = () => {
     });
 
     if (result.success) {
-      setSuccessMessage('Dang ky thanh cong, dang chuyen den trang dang nhap...');
+      setSuccessMessage('Đăng ký thành công, đang chuyển đến trang đăng nhập...');
       setTimeout(() => {
         navigate('/login', { replace: true });
       }, 1000);
@@ -145,7 +145,7 @@ const RegisterPage = () => {
             disabled={isLoading}
             className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Dang dang ky...' : 'Dang ky'}
+            {isLoading ? 'Đang đăng ký...' : 'Đăng ký'}
           </button>
         </form>
 

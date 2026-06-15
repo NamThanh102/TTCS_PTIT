@@ -43,9 +43,6 @@ const AdminDashboard = () => {
               <p className="text-gray-400 text-sm font-medium">Tổng truyện</p>
               <p className="text-3xl font-bold text-gray-100 mt-1">{stats.totalComics}</p>
             </div>
-            <div className="w-14 h-14 bg-blue-900/30 rounded-full flex items-center justify-center">
-              <span className="text-3xl">📚</span>
-            </div>
           </div>
           <Link to="/admin/comics" className="text-blue-400 hover:text-blue-300 text-sm font-medium mt-4 inline-block">
             Quản lý →
@@ -57,9 +54,6 @@ const AdminDashboard = () => {
             <div>
               <p className="text-gray-400 text-sm font-medium">Người dùng</p>
               <p className="text-3xl font-bold text-gray-100 mt-1">{stats.totalUsers}</p>
-            </div>
-            <div className="w-14 h-14 bg-green-900/30 rounded-full flex items-center justify-center">
-              <span className="text-3xl">👥</span>
             </div>
           </div>
           <Link to="/admin/users" className="text-green-400 hover:text-green-300 text-sm font-medium mt-4 inline-block">
@@ -73,9 +67,6 @@ const AdminDashboard = () => {
               <p className="text-gray-400 text-sm font-medium">Thành viên VIP</p>
               <p className="text-3xl font-bold text-gray-100 mt-1">{stats.vipUsers}</p>
             </div>
-            <div className="w-14 h-14 bg-yellow-900/30 rounded-full flex items-center justify-center">
-              <span className="text-3xl">⭐</span>
-            </div>
           </div>
           <Link to="/admin/users?role=vip" className="text-yellow-400 hover:text-yellow-300 text-sm font-medium mt-4 inline-block">
             Xem danh sách →
@@ -87,9 +78,6 @@ const AdminDashboard = () => {
             <div>
               <p className="text-gray-400 text-sm font-medium">Lượt xem</p>
               <p className="text-3xl font-bold text-gray-100 mt-1">{stats.totalViews}</p>
-            </div>
-            <div className="w-14 h-14 bg-purple-900/30 rounded-full flex items-center justify-center">
-              <span className="text-3xl">👁️</span>
             </div>
           </div>
           <p className="text-gray-500 text-sm mt-4">Tổng lượt xem</p>

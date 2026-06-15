@@ -32,11 +32,6 @@ const comicSchema = new mongoose.Schema({
     trim: true,
     maxlength: 100
   },
-  artist: {
-    type: String,
-    trim: true,
-    maxlength: 100
-  },
   categories: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category'
@@ -66,14 +61,9 @@ const comicSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  isFeatured: {
-    type: Boolean,
-    default: false
-  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    alias: 'uploadedBy'
   },
   lastChapterUpdate: {
     type: Date,

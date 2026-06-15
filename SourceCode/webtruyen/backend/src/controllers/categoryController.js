@@ -2,7 +2,7 @@ const Category = require('../models/Category');
 const Comic = require('../models/Comic');
 const asyncHandler = require('../utils/asyncHandler');
 const { AppError } = require('../middlewares/errorHandler');
-const { successResponse } = require('../utils/responseHelper');
+
 
 exports.getAllCategories = asyncHandler(async (req, res, next) => {
   const categories = await Category.find()
@@ -10,17 +10,7 @@ exports.getAllCategories = asyncHandler(async (req, res, next) => {
     .sort({ order: 1, name: 1 })
     .lean();
 
-  successResponse(res, 200, 'Categories retrieved successfully', { categories });
-});
-
-exports.getCategoryBySlug = asyncHandler(async (req, res, next) => {
-  const category = await Category.findOne({ slug: req.params.slug });
-
-  if (!category) {
-    return next(new AppError('Category not found', 404));
-  }
-
-  successResponse(res, 200, 'Category retrieved successfully', { category });
+  res.status(200).json({ success: true, statusCode: 200, message: 'Categories retrieved successfully', data: { categories } });
 });
 
 exports.createCategory = asyncHandler(async (req, res, next) => {
@@ -37,7 +27,7 @@ exports.createCategory = asyncHandler(async (req, res, next) => {
     order: order || 0
   });
 
-  successResponse(res, 201, 'Category created successfully', { category });
+  res.status(201).json({ success: true, statusCode: 201, message: 'Category created successfully', data: { category } });
 });
 
 exports.updateCategory = asyncHandler(async (req, res, next) => {
@@ -50,7 +40,7 @@ exports.updateCategory = asyncHandler(async (req, res, next) => {
     return next(new AppError('Category not found', 404));
   }
 
-  successResponse(res, 200, 'Category updated successfully', { category });
+  res.status(200).json({ success: true, statusCode: 200, message: 'Category updated successfully', data: { category } });
 });
 
 exports.deleteCategory = asyncHandler(async (req, res, next) => {
@@ -67,7 +57,7 @@ exports.deleteCategory = asyncHandler(async (req, res, next) => {
 
   await Category.deleteOne({ _id: category._id });
 
-  successResponse(res, 200, 'Category deleted successfully');
+  res.status(200).json({ success: true, statusCode: 200, message: 'Category deleted successfully' });
 });
 
 module.exports = exports;

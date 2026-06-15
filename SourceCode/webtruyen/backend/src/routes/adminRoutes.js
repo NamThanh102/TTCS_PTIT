@@ -10,7 +10,6 @@ router.get('/payments', userController.getAdminPayments);
 router.put('/payments/:paymentId', userController.updateAdminPayment);
 router.delete('/payments/:paymentId', userController.deleteAdminPayment);
 router.get('/users', userController.getAllUsers);
-router.get('/users/:userId', userController.getUserById);
 router.put('/users/:userId', userController.updateUserByAdmin);
 router.put('/users/:userId/password', userController.changeUserPasswordByAdmin);
 router.delete('/users/:userId', userController.deleteUser);

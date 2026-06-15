@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import useAuthStore from '../store/authStore';
-import api from '../services/api';
-import CommentSection from '../components/CommentSection';
+import useAuthStore from '../../store/authStore';
+import api from '../../services/api';
+import CommentSection from '../../components/CommentSection';
 
 const ReaderPage = () => {
   const { chapterId } = useParams();
@@ -14,6 +14,7 @@ const ReaderPage = () => {
   const [chapter, setChapter] = useState(null);
   const [comic, setComic] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!chapterId || chapterId === 'undefined') return;
@@ -22,6 +23,7 @@ const ReaderPage = () => {
 
   const fetchChapter = async () => {
     setLoading(true);
+    setError(null);
     try {
       const response = await api.get(`/chapters/${chapterId}`);
       const chapterData = response.data.data.chapter;
@@ -32,15 +34,15 @@ const ReaderPage = () => {
         fetchComic(comicId);
       }
 
-      if (isAuthenticated) {
-        api.post(`/users/library/history/${chapterId}`).catch(() => {});
+      try {
+        await api.post(`/users/library/history/${chapterId}`, {});
+        console.log('Lưu lịch sử thành công');
+      } catch (err) {
+        console.error('Lưu lịch sử thất bại:', err.response?.data || err.message);
       }
     } catch (error) {
-      if (error.response?.status === 403) {
-        navigate('/comics');
-      } else {
-        navigate('/comics');
-      }
+      const message = error.response?.data?.message || 'Không thể tải chương';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -51,25 +53,8 @@ const ReaderPage = () => {
       const response = await api.get(`/comics/${comicId}`);
       const comicData = response.data.data;
       setComic(comicData);
-
-      const comicInfo = comicData?.comic || comicData;
-      const chapterInfo = chapter?.comicId || {};
-      if (chapterInfo?.slug || comicInfo?.slug) {
-        const readingHistory = JSON.parse(localStorage.getItem('readingHistory') || '{}');
-        const historyKey = comicInfo?.slug || chapterInfo?.slug;
-        readingHistory[historyKey] = {
-          comicSlug: historyKey,
-          chapterId,
-          chapterNumber: chapter?.chapterNumber,
-          chapterTitle: chapter?.title,
-          comicTitle: comicInfo?.title || chapterInfo?.title,
-          coverImage: comicInfo?.coverImage || chapterInfo?.coverImage || null,
-          timestamp: Date.now()
-        };
-        localStorage.setItem('readingHistory', JSON.stringify(readingHistory));
-      }
     } catch {
-      // Ignore optional comic details fetch errors
+      // Không ảnh hưởng đến trải nghiệm đọc, chỉ mất dropdown chọn chương
     }
   };
   const comicData = comic?.comic || null;
@@ -83,9 +68,26 @@ const ReaderPage = () => {
     );
   }
 
-    if (!chapter) {
-      return null;
-    }
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <h2 className="text-2xl font-bold text-gray-100 mb-2">Không thể truy cập</h2>
+          <p className="text-gray-400 mb-6">{error}</p>
+          <button
+            onClick={() => navigate(-1)}
+            className="px-6 py-3 bg-zinc-700 text-gray-200 rounded-lg font-semibold hover:bg-zinc-600 transition-colors"
+          >
+            ← Quay lại
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!chapter) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen">

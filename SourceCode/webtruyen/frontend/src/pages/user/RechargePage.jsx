@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import useAuthStore from '../store/authStore';
-import api from '../services/api';
+import useAuthStore from '../../store/authStore';
+import api from '../../services/api';
 import toast from 'react-hot-toast';
 import { FaCoins, FaStar, FaUniversity, FaMobileAlt, FaWallet } from 'react-icons/fa';
 

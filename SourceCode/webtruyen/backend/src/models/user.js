@@ -29,12 +29,12 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['guest', 'member', 'admin'],
+    enum: ['member', 'admin'],
     default: 'member'
   },
   avatar: {
     type: String,
-    default: 'https://via.placeholder.com/150'
+    default: '/assets/default-avatar.png'
   },
   bio: {
     type: String,
@@ -86,8 +86,6 @@ const userSchema = new mongoose.Schema({
 }, { 
   timestamps: true 
 });
-
-// Password được lưu gốc (không mã hóa) - chỉ cho mục đích học tập
 
 userSchema.methods.comparePassword = async function(candidatePassword) {
   if (!this.password) return false;

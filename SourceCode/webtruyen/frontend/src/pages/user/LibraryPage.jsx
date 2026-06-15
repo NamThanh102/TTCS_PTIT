@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import ComicCard from '../components/ComicCard';
-import api from '../services/api';
+import ComicCard from '../../components/ComicCard';
+import api from '../../services/api';
 import { FaHeart } from 'react-icons/fa';
 
 const LibraryPage = () => {

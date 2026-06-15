@@ -1,18 +1,17 @@
 import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
-import PrivateRoute from './components/PrivateRoute';
-import AdminRoute from './components/AdminRoute';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
+import AuthRoute from './components/AuthRoute';
+import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
 import HomePage from './pages/HomePage';
-import ComicsPage from './pages/ComicsPage';
-import ComicDetailPage from './pages/ComicDetailPage';
-import ReaderPage from './pages/ReaderPage';
-import LibraryPage from './pages/LibraryPage';
-import HistoryPage from './pages/HistoryPage';
-import RechargePage from './pages/RechargePage';
-import ProfilePage from './pages/ProfilePage';
+import ComicsPage from './pages/comic/ComicsPage';
+import ComicDetailPage from './pages/comic/ComicDetailPage';
+import ReaderPage from './pages/comic/ReaderPage';
+import LibraryPage from './pages/user/LibraryPage';
+import HistoryPage from './pages/user/HistoryPage';
+import RechargePage from './pages/user/RechargePage';
+import ProfilePage from './pages/user/ProfilePage';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminPayments from './pages/admin/Payments';
 import AdminUsers from './pages/admin/Users';
@@ -47,14 +46,14 @@ function App() {
         <Route path="comics/:slug" element={<ComicDetailPage />} />
         <Route path="read/:chapterId" element={<ReaderPage />} />
 
-        <Route element={<PrivateRoute />}>
+        <Route element={<AuthRoute />}>
           <Route path="profile" element={<ProfilePage />} />
           <Route path="library" element={<LibraryPage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="recharge" element={<RechargePage />} />
         </Route>
 
-        <Route element={<AdminRoute />}>
+        <Route element={<AuthRoute requireAdmin />}>
           <Route path="admin" element={<AdminDashboard />} />
           <Route path="admin/payments" element={<AdminPayments />} />
           <Route path="admin/users" element={<AdminUsers />} />

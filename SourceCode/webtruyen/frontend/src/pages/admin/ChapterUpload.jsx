@@ -58,7 +58,7 @@ const ChapterUpload = () => {
         title: data.title || '',
         isVIPOnly: !!data.isVIPOnly
       });
-      const existingPages = (data.pages || []).map(p => ({ preview: p.url, order: p.order, publicId: p.publicId, existing: true }));
+      const existingPages = (data.pages || []).map(p => ({ _id: p._id, preview: p.url, order: p.order, publicId: p.publicId, existing: true }));
       setPages(existingPages);
       setComic(data.comicId || null);
     } catch (err) {
@@ -146,24 +146,30 @@ const ChapterUpload = () => {
 
     try {
       if (chapterId) {
-        await api.put(`/chapters/${chapterId}`, {
-          title: formData.title,
-          isPublished: true,
-          isVIPOnly: formData.isVIPOnly
+        const fd = new FormData();
+        fd.append('title', formData.title);
+        fd.append('isPublished', 'true');
+        fd.append('isVIPOnly', formData.isVIPOnly ? 'true' : 'false');
+        const keptPages = pages.filter(p => p.existing).map(p => ({ _id: p._id }));
+        fd.append('keptPages', JSON.stringify(keptPages));
+        pages.filter(p => !p.existing).forEach(p => fd.append('pages', p.file));
+
+        await api.put(`/chapters/${chapterId}`, fd, {
+          headers: { 'Content-Type': 'multipart/form-data' }
         });
         toast.success('Cập nhật chương thành công');
         navigate(`/admin/comics/${comicId}/chapters`);
       } else {
-        const data = new FormData();
-        data.append('chapterNumber', formData.chapterNumber);
-        data.append('title', formData.title);
-        data.append('isVIPOnly', formData.isVIPOnly);
+        const fd = new FormData();
+        fd.append('chapterNumber', formData.chapterNumber);
+        fd.append('title', formData.title);
+        fd.append('isVIPOnly', formData.isVIPOnly ? 'true' : 'false');
         
         pages.forEach((page) => {
-          if (page.file) data.append('pages', page.file);
+          if (page.file) fd.append('pages', page.file);
         });
 
-        await api.post(`/comics/${comicId}/chapters`, data, {
+        await api.post(`/comics/${comicId}/chapters`, fd, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
 
@@ -250,7 +256,7 @@ const ChapterUpload = () => {
               }`}
             >
               <input {...getInputProps()} />
-              <div className="text-6xl mb-4">📤</div>
+              <div className="text-6xl mb-4"></div>
               {isDragActive ? (
                 <p className="text-lg text-green-400 font-medium">Thả ảnh hoặc thư mục vào đây...</p>
               ) : (
@@ -262,7 +268,7 @@ const ChapterUpload = () => {
                     Hỗ trợ: PNG, JPG, JPEG, GIF, WebP
                   </p>
                   <p className="text-sm text-cyan-400">
-                    💡 Kéo cả thư mục chứa ảnh — ảnh sẽ được đọc và sắp xếp tự động
+                     Kéo cả thư mục chứa ảnh — ảnh sẽ được đọc và sắp xếp tự động
                   </p>
                 </div>
               )}
